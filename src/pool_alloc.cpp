@@ -6,6 +6,7 @@
 /**
  * @module tsds.pool_alloc
  * @brief Defines a fixed-size, thread-safe chunk allocator.
+ * @see tsds::PoolAlloc
  */
 
 module;
@@ -28,9 +29,17 @@ namespace tsds {
  * @brief A fix-sized pool allocator.
  * @tparam T The type to alloc.
  * @tparam NBlock The maximum number of T that can be held.
+ * @warning This allocator's allocations are @b not constexpr. For that purpose,
+ * just use the "normal" global-state @c ::operator new()
  *
- * This class (supposedly) satisfies the named requirement
- * [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
+ * This class does NOT satisfies the named requirement
+ * [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator).
+ *
+ * As for why that's the case: this allocator only allows you to get
+ * one chunk of memory of size @c sizeof(T) each time. The named
+ * requirement for @e Allocator requires @c allocate to be able to
+ * take in an extra parameter @c n, and return a pointer to @c T[n].
+ * This allocator simply doesn't do that.
  */
 export template <class T, std::size_t NBlock>
   requires std::is_same_v<T, std::remove_reference_t<T>>
@@ -38,6 +47,7 @@ class PoolAlloc {
   // https://en.cppreference.com/w/cpp/named_req/Allocator
 public:
   // NOLINTBEGIN(*identifier-naming*)
+  /// @{
   using value_type = T;
   using pointer = std::add_pointer_t<T>;
   using const_pointer = std::add_const_t<pointer>;
@@ -46,6 +56,21 @@ public:
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
   static constexpr bool is_always_equal = false;
+  /// @}
+  /**
+   * @brief Part of Allocator named requirement (that is actually useful for
+   * this allocator, although, not that much).
+   * @tparam Other The type to rebind to.
+   *
+   * Could be useful if a data structure requires 2 different ways to
+   * chunk-allocate. If that's the case, prefer to just store the extra
+   * allocator as a variable.
+   */
+  template <typename Other> struct rebind {
+    /// @cond
+    using other = PoolAlloc<Other, NBlock>;
+    /// @endcond
+  };
   // NOLINTEND(*identifier-naming*)
 
   /**
@@ -53,10 +78,11 @@ public:
    * @return A valid pointer to an uninitialized memory block of size @c
    * sizeof(T) if successful, or a nullptr otherwise.
    *
-   * This function takes in a @c std::size_t only to satisfy @e Allocator named
-   * requirement.
+   * @warning This is @b not an allocator that conforms to Allocator named
+   * requirement, simply because it doesn't need to. Refer to the document of
+   * @ref tsds::PoolAlloc for a brief explanation.
    */
-  constexpr auto allocate(std::size_t /*unused*/ = 0) noexcept -> pointer;
+  auto allocate() noexcept -> pointer;
 
   /**
    * @brief Releases the memory held by @a t_p_obj back.
@@ -69,14 +95,15 @@ public:
    * @code{.cpp}
    * *this == alloc;
    * @endcode
-   * @warning Please only let @b one thread deallocate. Fortunately, this is the
-   * behavior that smart pointers support.
+   * @warning Please only let exactly @b one thread deallocate. Fortunately,
+   * this is the behavior that smart pointers support.
    */
-  constexpr void deallocate(pointer t_p_obj) noexcept;
+  void deallocate(pointer t_p_obj) noexcept;
   /**
    * @brief Just returns @a NBlock
    * @return NBlock.
-   * This is just here to satisfy the @e Allocator named requirement.
+   * This is just here as part of the @e Allocator named requirement. Despite
+   * that, @ref tsds::PoolAlloc does @b not satisfy the named requirement.
    */
   [[nodiscard]] constexpr auto max_size() const noexcept -> size_type;
   /**
@@ -128,14 +155,16 @@ private:
   class AllocBuf {
   public:
     AllocBuf() noexcept
-        : m_init_flag{true}, m_buff{new std::array<T, NBlock>{}},
+        : m_init_flag{true}, m_buff{reinterpret_cast<T*>(           // NOLINT
+                                 std::malloc(sizeof(T) * NBlock))}, // NOLINT
           m_head{m_slot_list.begin()} {
       AllocSlot* last_slot = nullptr;
-      for (auto [slot, buf_item] : std::views::zip(
-               m_slot_list | std::views::all, (*m_buff) | std::views::all) | std::views::reverse) {
-        slot.blk = &buf_item;
+      std::size_t idx = 0;
+      for (auto& slot : m_slot_list | std::views::reverse) {
+        slot.blk = m_buff.get() + idx;
         slot.next = last_slot;
         last_slot = &slot;
+        ++idx;
       }
 
       m_init_flag.clear(std::memory_order::release);
@@ -148,15 +177,20 @@ private:
     ~AllocBuf() = default;
 
     /**
-     * @see tsds::PoolAlloc::allocate
+     * @copydoc tsds::PoolAlloc::allocate
      */
-    [[nodiscard]] constexpr auto allocate() noexcept -> pointer;
+    [[nodiscard]] auto allocate() noexcept -> pointer;
     /**
-     * @see tsds::PoolAlloc::deallocate
+     * @copydoc tsds::PoolAlloc::deallocate
      */
-    constexpr void deallocate(pointer t_p_obj) noexcept;
+    void deallocate(pointer t_p_obj) noexcept;
 
   private:
+    struct BufferDeallocator {
+      void operator()(pointer t_p_buff) noexcept {
+        std::free(t_p_buff); // NOLINT(*no-malloc*)
+      }
+    };
     /**
      * @brief Blocks all allocations until initialization is finished.
      *
@@ -178,7 +212,8 @@ private:
     /**
      * @brief The buffer.
      */
-    const std::unique_ptr<std::array<T, NBlock>> m_buff{};
+    const std::unique_ptr<T, BufferDeallocator>
+        m_buff; // NOLINT(*avoid-c-array*)
     /**
      * @brief The head of the slot list. Doesn't necessarily have to be the
      * slot with the lowest/highest memory position.
@@ -201,6 +236,7 @@ private:
   /// @endcond DEV
 };
 
+/// @cond DEV
 template <class T, std::size_t NBlock>
   requires std::is_same_v<T, std::remove_reference_t<T>>
 [[nodiscard]] constexpr auto
@@ -219,20 +255,19 @@ PoolAlloc<T, NBlock>::operator!=(const PoolAlloc& t_other) const noexcept
 
 template <class T, std::size_t NBlock>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-[[nodiscard]] constexpr auto
-PoolAlloc<T, NBlock>::allocate(std::size_t /*unused*/) noexcept -> pointer {
+[[nodiscard]] auto PoolAlloc<T, NBlock>::allocate() noexcept -> pointer {
   return m_alloc_buf->allocate();
 }
 
 template <class T, std::size_t NBlock>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-constexpr void PoolAlloc<T, NBlock>::deallocate(pointer t_p_obj) noexcept {
+void PoolAlloc<T, NBlock>::deallocate(pointer t_p_obj) noexcept {
   m_alloc_buf->deallocate(t_p_obj);
 }
 
 template <class T, std::size_t NBlock>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-[[nodiscard]] constexpr auto PoolAlloc<T, NBlock>::AllocBuf::allocate() noexcept
+[[nodiscard]] auto PoolAlloc<T, NBlock>::AllocBuf::allocate() noexcept
     -> pointer {
   // wait until initialization finishes.
   // We don't need to get the "spinlock" here.
@@ -259,9 +294,8 @@ template <class T, std::size_t NBlock>
 
 template <class T, std::size_t NBlock>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-constexpr void
-PoolAlloc<T, NBlock>::AllocBuf::deallocate(pointer t_p_obj) noexcept {
-  auto t_idx = static_cast<size_type>(t_p_obj - m_buff->data());
+void PoolAlloc<T, NBlock>::AllocBuf::deallocate(pointer t_p_obj) noexcept {
+  auto t_idx = static_cast<size_type>(t_p_obj - m_buff.get());
   auto* slot = &m_slot_list.at(t_idx);
   auto curr_head = m_head.load(std::memory_order::relaxed);
   while (!m_head.compare_exchange_weak(curr_head, slot,
@@ -271,4 +305,5 @@ PoolAlloc<T, NBlock>::AllocBuf::deallocate(pointer t_p_obj) noexcept {
   slot->next.store(curr_head, std::memory_order::release);
 }
 
+/// @endcond DEV
 } // namespace tsds

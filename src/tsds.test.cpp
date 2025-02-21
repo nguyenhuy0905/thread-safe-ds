@@ -1,6 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 // without the range, clangd complains. So, comment the include out when clangd
 // complains
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <ranges>
 #include <thread>
@@ -24,17 +26,19 @@ TEST_CASE("Hopefully it compiles") {
       std::array<int*, 32> ptr_vec{};    // NOLINT(*magic-number*)
       for (uint8_t i = 0; i < 32; ++i) { // NOLINT(*magic-number*)
         auto* ptr = test.allocate();
+        // should be consistent all the way until deallocation.
         *ptr = i; // NOLINT
-        // should ALWAYS be 99.
         // Link with TSan to check.
         REQUIRE(ptr != nullptr);
         // if shits go wrong, this goes wrong
         REQUIRE(*ptr == i);
         ptr_vec.at(i) = ptr;
       }
-      // If nothing goes wrong, commenting this out should still pass all the tests
-      for (auto* ptr : ptr_vec) {
-        test.deallocate(ptr);
+      // If nothing goes wrong, commenting this out should still pass all the
+      // tests
+      for (uint8_t i = 0; i < 32; ++i) { // NOLINT(*magic-number*)
+        REQUIRE(*ptr_vec.at(i) == i);
+        test.deallocate(ptr_vec.at(i));
       }
     }};
     for (auto& thr : test_threads) {
