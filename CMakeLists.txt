@@ -10,11 +10,23 @@ include(cmake/top-level.cmake)
 include(cmake/compile-options.cmake)
 include(cmake/folders.cmake)
 
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+
 # ---- library ----
 
 # target_sources inside the src/ directory
 
+include(GenerateExportHeader)
 add_library(tsds_lib)
+target_compile_features(tsds_lib
+  PUBLIC cxx_std_${CMAKE_CXX_STANDARD}
+)
+generate_export_header(tsds_lib
+  EXPORT_FILE_NAME tsds_export.h
+  BASE_NAME tsds
+)
 target_include_directories(tsds_lib ${WARNING_GUARD}
     PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>"

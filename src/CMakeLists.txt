@@ -3,9 +3,15 @@
 add_subdirectory(internal)
 target_sources(tsds_lib
   PUBLIC
-  FILE_SET tsds_modules TYPE CXX_MODULES FILES
+  FILE_SET CXX_MODULES FILES
   tsds.cpp
   pool_alloc.cpp
+)
+target_sources(tsds_lib
+  PUBLIC FILE_SET HEADERS
+  BASE_DIRS ${PROJECT_BINARY_DIR}
+  FILES
+  ${PROJECT_BINARY_DIR}/tsds_export.h
 )
 target_link_libraries(tsds_lib
   PRIVATE

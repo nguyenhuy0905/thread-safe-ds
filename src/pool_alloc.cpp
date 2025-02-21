@@ -11,6 +11,7 @@
 
 module;
 /// @cond
+#include "tsds_export.h"
 #include <array>
 #include <atomic>
 #include <cassert>
@@ -41,7 +42,7 @@ namespace tsds {
  * take in an extra parameter @c n, and return a pointer to @c T[n].
  * This allocator simply doesn't do that.
  */
-export template <class T, std::size_t NBlock>
+export TSDS_EXPORT template <class T, std::size_t NBlock>
   requires std::is_same_v<T, std::remove_reference_t<T>>
 class PoolAlloc {
   // https://en.cppreference.com/w/cpp/named_req/Allocator
@@ -135,8 +136,8 @@ private:
     /**
      * @brief Convenient initialization function for @ref AllocSlot
      *
-     * @param t_p_next
-     * @param t_p_blk
+     * @param t_p_next Initializes @ref next
+     * @param t_p_blk Initializes @ref blk
      */
     AllocSlot(AllocSlot* t_p_next, pointer t_p_blk)
         : next(t_p_next), blk(t_p_blk) {}
@@ -152,74 +153,7 @@ private:
    * AllocSlot.
    * @see tsds::PoolAlloc::AllocSlot
    */
-  class AllocBuf {
-  public:
-    AllocBuf() noexcept
-        : m_init_flag{true}, m_buff{reinterpret_cast<T*>(           // NOLINT
-                                 std::malloc(sizeof(T) * NBlock))}, // NOLINT
-          m_head{m_slot_list.begin()} {
-      AllocSlot* last_slot = nullptr;
-      std::size_t idx = 0;
-      for (auto& slot : m_slot_list | std::views::reverse) {
-        slot.blk = m_buff.get() + idx;
-        slot.next = last_slot;
-        last_slot = &slot;
-        ++idx;
-      }
-
-      m_init_flag.clear(std::memory_order::release);
-      m_init_flag.notify_all();
-    }
-    AllocBuf(const AllocBuf&) = delete;
-    AllocBuf(AllocBuf&&) = delete;
-    auto operator=(const AllocBuf&) = delete;
-    auto operator=(AllocBuf&&) = delete;
-    ~AllocBuf() = default;
-
-    /**
-     * @copydoc tsds::PoolAlloc::allocate
-     */
-    [[nodiscard]] auto allocate() noexcept -> pointer;
-    /**
-     * @copydoc tsds::PoolAlloc::deallocate
-     */
-    void deallocate(pointer t_p_obj) noexcept;
-
-  private:
-    struct BufferDeallocator {
-      void operator()(pointer t_p_buff) noexcept {
-        std::free(t_p_buff); // NOLINT(*no-malloc*)
-      }
-    };
-    /**
-     * @brief Blocks all allocations until initialization is finished.
-     *
-     * We need to finish initializing the allocator before we use it.
-     * So, we acquire the lock as soon as initialization starts.
-     * That's why it needs to be placed as the first member.
-     *
-     * @ref allocate will need to check (but doesn't need to acquire) if the
-     * flag is false.
-     */
-    std::atomic_flag m_init_flag;
-    /**
-     * @brief Holds instances @ref AllocSlot.
-     *
-     * @ref AllocSlot themselves form a linked list. This array simply holds the
-     * data.
-     */
-    std::array<AllocSlot, NBlock> m_slot_list{};
-    /**
-     * @brief The buffer.
-     */
-    const std::unique_ptr<T, BufferDeallocator>
-        m_buff; // NOLINT(*avoid-c-array*)
-    /**
-     * @brief The head of the slot list. Doesn't necessarily have to be the
-     * slot with the lowest/highest memory position.
-     */
-    std::atomic<AllocSlot*> m_head;
-  };
+  class AllocBuf;
 
   /**
    * @brief Points to a block of allocation buffer.
@@ -236,7 +170,77 @@ private:
   /// @endcond DEV
 };
 
-/// @cond DEV
+/// @cond
+template <class T, std::size_t NBlock>
+  requires std::is_same_v<T, std::remove_reference_t<T>>
+class PoolAlloc<T, NBlock>::AllocBuf {
+public:
+  AllocBuf() noexcept
+      : m_init_flag{true}, m_buff{reinterpret_cast<T*>(           // NOLINT
+                               std::malloc(sizeof(T) * NBlock))}, // NOLINT
+        m_head{m_slot_list.begin()} {
+    AllocSlot* last_slot = nullptr;
+    std::size_t idx = 0;
+    for (auto& slot : m_slot_list | std::views::reverse) {
+      slot.blk = m_buff.get() + idx;
+      slot.next = last_slot;
+      last_slot = &slot;
+      ++idx;
+    }
+
+    m_init_flag.clear(std::memory_order::release);
+    m_init_flag.notify_all();
+  }
+  AllocBuf(const AllocBuf&) = delete;
+  AllocBuf(AllocBuf&&) = delete;
+  auto operator=(const AllocBuf&) = delete;
+  auto operator=(AllocBuf&&) = delete;
+  ~AllocBuf() = default;
+
+  /**
+   * @copydoc tsds::PoolAlloc::allocate
+   */
+  [[nodiscard]] auto allocate() noexcept -> pointer;
+  /**
+   * @copydoc tsds::PoolAlloc::deallocate
+   */
+  void deallocate(pointer t_p_obj) noexcept;
+
+private:
+  struct BufferDeallocator {
+    void operator()(pointer t_p_buff) noexcept {
+      std::free(t_p_buff); // NOLINT(*no-malloc*)
+    }
+  };
+  /**
+   * @brief Blocks all allocations until initialization is finished.
+   *
+   * We need to finish initializing the allocator before we use it.
+   * So, we acquire the lock as soon as initialization starts.
+   * That's why it needs to be placed as the first member.
+   *
+   * @ref allocate will need to check (but doesn't need to acquire) if the
+   * flag is false.
+   */
+  std::atomic_flag m_init_flag;
+  /**
+   * @brief Holds instances @ref AllocSlot.
+   *
+   * @ref AllocSlot themselves form a linked list. This array simply holds the
+   * data.
+   */
+  std::array<AllocSlot, NBlock> m_slot_list{};
+  /**
+   * @brief The buffer.
+   */
+  const std::unique_ptr<T, BufferDeallocator> m_buff; // NOLINT(*avoid-c-array*)
+  /**
+   * @brief The head of the slot list. Doesn't necessarily have to be the
+   * slot with the lowest/highest memory position.
+   */
+  std::atomic<AllocSlot*> m_head;
+};
+
 template <class T, std::size_t NBlock>
   requires std::is_same_v<T, std::remove_reference_t<T>>
 [[nodiscard]] constexpr auto
