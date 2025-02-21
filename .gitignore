@@ -1,0 +1,9 @@
+build/
+.vs/
+.vscode/
+.idea/
+.clangd
+.cache/
+conan/
+CMakeUserPresets.json
+compile_commands.json

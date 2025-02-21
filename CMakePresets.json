@@ -1,0 +1,88 @@
+{
+    "version": 8,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 28,
+        "patch": 0
+    },
+    "configurePresets": [
+    {
+        "name": "cmake-pedantic",
+        "description": "(C)Make great again",
+        "hidden": true,
+        "warnings": {
+            "dev": true,
+            "deprecated": true,
+            "uninitialized": true,
+            "unusedCli": true,
+            "systemVars": false
+        },
+        "errors": {
+            "dev": true,
+            "deprecated": true
+        }
+    },
+    {
+        "name": "base-cfg",
+        "hidden": true,
+        "cacheVariables": {
+            "CMAKE_CXX_STANDARD": "23",
+            "CMAKE_CXX_EXTENSIONS": "OFF",
+            "CMAKE_CXX_STANDARD_REQUIRED": "ON"
+        }
+    },
+    {
+        "name": "conan",
+        "hidden": true,
+        "cacheVariables": {
+            "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/conan/conan_toolchain.cmake"
+        }
+    },
+    {
+        "name": "test",
+        "hidden": true,
+        "cacheVariables": {
+            "BUILD_TESTING": "ON"
+        }
+    },
+    {
+        "name": "clang-tidy",
+        "hidden": true,
+        "cacheVariables": {
+            "CMAKE_CXX_CLANG_TIDY": "clang-tidy;--header-filter=^${sourceDir}/"
+        }
+    },
+    {
+        "name": "dev",
+        "inherits": ["cmake-pedantic", "base-cfg", "test"],
+        "binaryDir": "${sourceDir}/build/dev",
+        "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "Debug",
+            "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+            "tsds_ASAN": "ON",
+            "tsds_UBSAN": "ON",
+            "tsds_DEV": "ON"
+        }
+    },
+    {
+        "name": "dev-conan",
+        "inherits": ["dev", "conan"]
+    },
+    {
+        "name": "release",
+        "binaryDir": "${sourceDir}/build/rel",
+        "inherits": ["base-cfg"],
+        "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        }
+    },
+    {
+        "name": "release-conan",
+        "inherits": ["release", "conan"]
+    },
+    {
+      "name": "release-ci",
+      "inherits": ["release-conan", "test"]
+    }
+    ]
+}
