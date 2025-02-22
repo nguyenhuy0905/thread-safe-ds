@@ -74,21 +74,13 @@ jobs:
         run: |
           echo "conan-dotdir=$(conan config home)" >> "$GITHUB_OUTPUT"
 
-      - name: Cache installed dependencies (Ubuntu/Mac)
-        if: matrix.os != 'windows-latest'
-        id: cache-conan
-        uses: action/cache@v4
-        with:
-          path: ${{ steps.strings.outputs.conan-dotdir }}
-          key: conan-cache-unix-${{ hashFiles(${{ steps.conan-dot.outputs.conan-dotdir }}/.*/pkglist.json) }}
-
-      - name: Cache installed dependencies (Windows)
+      - name: Cache installed dependencies
         if: matrix.os == 'windows-latest'
         id: cache-conan
         uses: action/cache@v4
         with:
           path: ${{ steps.strings.outputs.conan-dotdir }}
-          key: conan-cache-windows-${{ hashFiles(.*/pkglist.json) }}
+          key: conan-cache-${{ runner.os }}-${{ hashFiles(.*/pkglist.json) }}
 
       - name: Install conan dependencies
         if: ${{ steps.cache-conan.outputs.cache-hit != 'true' }}
