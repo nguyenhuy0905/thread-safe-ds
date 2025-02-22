@@ -91,7 +91,7 @@ jobs:
         shell: bash
         run: |
           conan profile detect -f
-          sed -i -Ee "s/^(compiler.cppstd=).*/\120" "$(conan profile path default)"
+          sed -i -Ee "s/^(compiler.cppstd=).*/\120/" "$(conan profile path default)"
           conan install . -s build_type=${{ matrix.build_type }} -b missing
 
       - name: Activate conan env (Windows)
