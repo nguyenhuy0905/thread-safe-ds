@@ -91,8 +91,10 @@ jobs:
         shell: bash
         run: |
           conan profile detect -f
-          sed -i -Ee "s/^(compiler.cppstd=).*/\120/" "$(conan profile path default)"
-          conan install . -s build_type=${{ matrix.build_type }} -b missing
+          conan install . -s compiler="$CC"\
+                -s compiler.cppstd=20 \
+                -c tools.cmake.cmaketoolchain:generator=Ninja
+                build_type=${{ matrix.build_type }} -b missing
 
       - name: Activate conan env (Windows)
         if: runner.os == 'Windows'
