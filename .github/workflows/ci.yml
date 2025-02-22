@@ -71,26 +71,87 @@ jobs:
           graphviz: true
 
       - name: Setup conan profile
-        run: |
-          conan profile detect -f
+        run: conan profile detect -f
 
-      - name: Conan install
+      - name: Conan install (GCC)
+        if: ${{ matrix.compiler == 'gcc-14' }}
         run: |
           conan install . -s build_type=${{ matrix.build_type }} \
-          -s compiler=${{ matrix.compiler }} \
+          -s compiler=gcc \
+          -s compiler.stdlib=libstdc++
+          -s compiler.cppstd=20 \
+          -s compiler.version=14
+          -b missing
+
+      - name: Conan install (LLVM)
+        env:
+          CC=clang
+          CXX=clang++
+        if: ${{ matrix.compiler == 'llvm' }}
+        run: |
+          conan install . -s build_type=${{ matrix.build_type }} \
+          -s compiler=apple-clang \
           -s compiler.cppstd=20 \
           -b missing
 
-      - name: CMake setup
-        if: ${{ matrix.build_type == 'Debug' }}
+      - name: Conan install (LLVM-18)
+        if: ${{ matrix.compiler == 'llvm-18' }}
+        env:
+          CC: clang-18
+          CXX: clang++-18
+        run: |
+          conan install . -s build_type=${{ matrix.build_type }} \
+          -s compiler=clang \
+          -s compiler.cppstd=20 \
+          -s compiler.version=18 \
+          -b missing
+
+      - name: CMake setup (Debug, GCC)
+        if: ${{ matrix.build_type == 'Debug' && matrix.compiler == 'gcc-14' }}
+        env:
+          CC: gcc-14
+          CXX: g++-14
         run: | 
           cmake --preset=dev-conan
 
-      - name: CMake setup
-        if: ${{ matrix.build_type == 'RelWithDebInfo' }}
+      - name: CMake setup (Debug, LLVM-18)
+        if: ${{ matrix.build_type == 'Debug' && matrix.compiler == 'llvm-18' }}
+        env:
+          CC: clang-18
+          CXX: clang++-18
+        run: | 
+          cmake --preset=dev-conan
+
+      - name: CMake setup (Debug, no-special-compiler)
+        if: ${{ matrix.build_type == 'Debug' && matrix.compiler != 'llvm-18' && matrix.compiler != 'gcc-14' }}
+        run: | 
+          cmake --preset=dev-conan
+
+      - name: CMake setup (RelWithDebInfo, GCC)
+        if: ${{ matrix.build_type == 'RelWithDebInfo' && matrix.compiler == 'gcc-14' }}
+        env:
+          CC: gcc-14
+          CXX: g++-14
+        run: | 
+          cmake --preset=release-conan
+
+      - name: CMake setup (RelWithDebInfo, LLVM-18)
+        if: ${{ matrix.build_type == RelWithDebInfo'' && matrix.compiler == 'llvm-18' }}
+        env:
+          CC: clang-18
+          CXX: clang++-18
+        run: | 
+          cmake --preset=release-conan
+
+      - name: CMake setup (RelWithDebInfo, no-special-compiler)
+        if: ${{ matrix.build_type == 'RelWithDebInfo' && matrix.compiler != 'llvm-18' && matrix.compiler != 'gcc-14' }}
         run: | 
           cmake --preset=dev-conan
 
       - name: Build
         run:
           cmake --build build/${{ matrix.build_type }} --config ${{ matrix.build_type }}
+
+      - name: Test
+        run:
+          ctest --test-dir=build/${{ matrix.build_type }}

@@ -84,7 +84,7 @@
     },
     {
         "name": "release",
-        "binaryDir": "${sourceDir}/build/Release",
+        "binaryDir": "${sourceDir}/build/RelWithDebInfo",
         "inherits": ["base-cfg"],
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "RelWithDebInfo"
