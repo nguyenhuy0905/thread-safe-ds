@@ -78,9 +78,9 @@ jobs:
         run: |
           conan install . -s build_type=${{ matrix.build_type }} \
           -s compiler=gcc \
-          -s compiler.stdlib=libstdc++
+          -s compiler.libcxx=libstdc++ \
           -s compiler.cppstd=20 \
-          -s compiler.version=14
+          -s compiler.version=14 \
           -b missing
 
       - name: Conan install (LLVM)
