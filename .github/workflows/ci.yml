@@ -136,7 +136,7 @@ jobs:
           cmake --preset=release-conan
 
       - name: CMake setup (RelWithDebInfo, LLVM-18)
-        if: ${{ matrix.build_type == RelWithDebInfo'' && matrix.compiler == 'llvm-18' }}
+        if: ${{ matrix.build_type == 'RelWithDebInfo' && matrix.compiler == 'llvm-18' }}
         env:
           CC: clang-18
           CXX: clang++-18
