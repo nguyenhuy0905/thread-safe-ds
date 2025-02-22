@@ -84,7 +84,7 @@ jobs:
           CONAN_DOTDIR: ${{ steps.conan-dot.outputs.conan-dotdir }}
         with:
           path: ${{ steps.conan-dot.outputs.conan-dotdir }}
-          key: conan-cache-${{ runner.os }}-${{ hashFiles('/**/pkglist.json') }}
+          key: conan-cache-${{ runner.os }}-${{ hashFiles('**/conanfile.py') }}
 
       - name: Install conan dependencies
         if: ${{ steps.cache-conan.outputs.cache-hit != 'true' }}
