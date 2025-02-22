@@ -84,7 +84,7 @@ jobs:
           CONAN_DOTDIR: ${{ steps.conan-dot.outputs.conan-dotdir }}
         with:
           path: ${{ steps.conan-dot.outputs.conan-dotdir }}
-          key: conan-cache-${{ runner.os }}-${{ hashFiles('**/conan.lock') }}
+          key: conan-${{ runner.os }}-${{ hashFiles('**/conanfile.py') }}
 
       - name: Setup conan profile
         if: ${{ steps.cache-conan.outputs.cache-hit != 'true' }}
