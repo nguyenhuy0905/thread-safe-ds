@@ -101,7 +101,7 @@ if(tsds_ASAN OR tsds_MSAN OR tsds_TSAN OR tsds_UBSAN)
       "/fsanitize=address"
     )
     target_link_options(tsds_compile_options
-        INTERFACE "/fsanitize=${sanitizer_opts}")
+        INTERFACE "/fsanitize=address")
   endif()
 endif()
 
