@@ -79,7 +79,7 @@
         "name": "dev-ci",
         "inherits": ["dev-conan"],
         "cacheVariables": {
-          "tsds_DOCS": "OFF",
+          "tsds_DOCS": "OFF"
         }
     },
     {
@@ -98,7 +98,7 @@
       "name": "release-ci",
       "inherits": ["release-conan", "test"],
         "cacheVariables": {
-          "tsds_DOCS": "OFF",
+          "tsds_DOCS": "OFF"
         }
     }
     ]
