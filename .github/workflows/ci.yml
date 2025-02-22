@@ -27,10 +27,10 @@ jobs:
             cxx_compiler: cl
           - os: ubuntu-latest
             c_compiler: gcc
-            cxx_compiler: g++
+            cxx_compiler: g++-14
           - os: ubuntu-latest
             c_compiler: clang
-            cxx_compiler: clang++
+            cxx_compiler: clang++-18
             # hopefully this targets apple clang
           - os: macos-latest
             c_compiler: clang
@@ -84,13 +84,15 @@ jobs:
           CONAN_DOTDIR: ${{ steps.conan-dot.outputs.conan-dotdir }}
         with:
           path: ${{ steps.conan-dot.outputs.conan-dotdir }}
-          key: conan-cache-${{ runner.os }}-${{ hashFiles('**/conanfile.py') }}
+          key: conan-cache-${{ runner.os }}-${{ hashFiles('**/conan.lock') }}
 
       - name: Install conan dependencies
         if: ${{ steps.cache-conan.outputs.cache-hit != 'true' }}
         shell: bash
         run: |
-          bash tools/conan-ci.sh ${{ matrix.build_type }}
+          conan profile detect -f
+          sed -i -Ee "s/^(compiler.cppstd=).*/\120" "$(conan profile path default)"
+          conan install . -s build_type=${{ matrix.build_type }} -b missing
 
       - name: Activate conan env (Windows)
         if: runner.os == 'Windows'
