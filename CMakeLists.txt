@@ -20,6 +20,14 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
 include(GenerateExportHeader)
 add_library(tsds_lib)
+# clean up GCOV files
+add_custom_command(TARGET tsds_lib
+  COMMENT "Clean up GCOV files"
+  PRE_LINK
+  COMMAND ${CMAKE_COMMAND} -E rm -rf
+  ${PROJECT_BINARY_DIR}/*.gcno
+  ${PROJECT_BINARY_DIR}/*.gcda
+)
 target_compile_features(tsds_lib
   PUBLIC cxx_std_${CMAKE_CXX_STANDARD}
 )
