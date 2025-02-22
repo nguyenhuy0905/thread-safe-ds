@@ -45,7 +45,9 @@ jobs:
         with:
           path: |
             ./build/
+            ./conan/
             ~/.conan2
+            ${{ env.APPDATA }}/.conan2
             ${{ env.LOCALAPPDATA }}/.conan2
             ~/.cache/ccache
             ~/.ccache
@@ -70,27 +72,8 @@ jobs:
       - name: Setup conan profile
         run: conan profile detect -f
 
-      - name: Conan install (GCC-14)
-        if: ${{ matrix.compiler == 'gcc-14' }}
-        run: |
-          conan install . -s build_type=${{ matrix.build_type }} \
-          -s compiler=gcc \
-          -s compiler.libcxx=libstdc++ \
-          -s compiler.cppstd=20 \
-          -s compiler.version=14 \
-          -b missing
-
-      - name: Conan install (LLVM-18)
-        if: ${{ matrix.compiler == 'llvm-18' }}
-        run: |
-          conan install . -s build_type=${{ matrix.build_type }} \
-          -s compiler=clang \
-          -s compiler.cppstd=20 \
-          -s compiler.version=18 \
-          -b missing
-
-      - name: Conan install (Otherwise)
-        if: ${{ matrix.compiler != 'gcc-14' || matrix.compiler != 'clang-18' }}
+      - name: Conan install
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
           conan install . -s build_type=${{ matrix.build_type }} \
           -s compiler.cppstd=20 \
