@@ -10,6 +10,9 @@ include(cmake/top-level.cmake)
 include(cmake/compile-options.cmake)
 include(cmake/folders.cmake)
 
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 23)
+endif()
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
@@ -18,25 +21,12 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
 # target_sources inside the src/ directory
 
-include(GenerateExportHeader)
-add_library(tsds_lib)
-# clean up GCOV files
-add_custom_command(TARGET tsds_lib
-  COMMENT "Clean up GCOV files"
-  PRE_LINK
-  COMMAND ${CMAKE_COMMAND} -E rm -rf
-  ${PROJECT_BINARY_DIR}/*.gcno
-  ${PROJECT_BINARY_DIR}/*.gcda
-)
+add_library(tsds_lib INTERFACE)
 target_compile_features(tsds_lib
-  PUBLIC cxx_std_${CMAKE_CXX_STANDARD}
-)
-generate_export_header(tsds_lib
-  EXPORT_FILE_NAME tsds_export.h
-  BASE_NAME tsds
+  INTERFACE cxx_std_${CMAKE_CXX_STANDARD}
 )
 target_include_directories(tsds_lib ${WARNING_GUARD}
-    PUBLIC
+  INTERFACE
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>"
 )
 add_library(tsds::tsds ALIAS tsds_lib)

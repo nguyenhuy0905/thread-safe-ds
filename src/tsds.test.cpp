@@ -5,7 +5,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <thread>
-import tsds;
+#ifdef TSDS_MODULE
+import tsds_pool_alloc;
+#else
+#include "pool_alloc.hpp"
+#endif // TSDS_MODULE
 
 TEST_CASE("Placebo") { REQUIRE(1 == 1); }
 
@@ -13,9 +17,9 @@ TEST_CASE("Placebo") { REQUIRE(1 == 1); }
 TEST_CASE("Hopefully it compiles") {
   constexpr std::size_t POOL_NUM = 1024;
   tsds::PoolAlloc<int, POOL_NUM> test{};
-  auto* ptr = test.allocate();
-  REQUIRE(ptr != nullptr);
-  test.deallocate(ptr);
+  auto* first_ptr = test.allocate();
+  REQUIRE(first_ptr != nullptr);
+  test.deallocate(first_ptr);
 
   // there's a very high chance you're borked by TSan if you do allocate
   // dynamically (say, with a vector)
@@ -23,21 +27,21 @@ TEST_CASE("Hopefully it compiles") {
   for (uint16_t i = 0; i < 32; ++i) {         // NOLINT(*magic-number*)
     test_threads.at(i) = std::thread{[&test]() mutable {
       std::array<int*, 32> ptr_vec{};    // NOLINT(*magic-number*)
-      for (uint8_t i = 0; i < 32; ++i) { // NOLINT(*magic-number*)
+      for (uint8_t j = 0; j < 32; ++j) { // NOLINT(*magic-number*)
         auto* ptr = test.allocate();
         // should be consistent all the way until deallocation.
-        *ptr = i; // NOLINT
+        *ptr = j; // NOLINT
         // Link with TSan to check.
         REQUIRE(ptr != nullptr);
         // if shits go wrong, this goes wrong
-        REQUIRE(*ptr == i);
-        ptr_vec.at(i) = ptr;
+        REQUIRE(*ptr == j);
+        ptr_vec.at(j) = ptr;
       }
       // If nothing goes wrong, commenting this out should still pass all the
       // tests
-      for (uint8_t i = 0; i < 32; ++i) { // NOLINT(*magic-number*)
-        REQUIRE(*ptr_vec.at(i) == i);
-        test.deallocate(ptr_vec.at(i));
+      for (uint8_t j = 0; j < 32; ++j) { // NOLINT(*magic-number*)
+        REQUIRE(*ptr_vec.at(j) == j);
+        test.deallocate(ptr_vec.at(j));
       }
     }};
     for (auto& thr : test_threads) {

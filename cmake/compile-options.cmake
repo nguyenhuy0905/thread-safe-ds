@@ -2,6 +2,12 @@ include(CMakeDependentOption)
 # compilation options and features
 
 add_library(tsds_compile_options INTERFACE)
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang"
+      OR
+      CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(tsds_compile_options INTERFACE -Og)
+endif()
+
 # ---- feature ----
 target_compile_features(tsds_compile_options
   INTERFACE
@@ -93,6 +99,28 @@ if(tsds_PCH)
     # add some more here, if you need!
     <iostream> <memory> <print>
   )
+endif()
+
+# ---- modules ----
+
+cmake_dependent_option(tsds_MODULE "Whether to build using modules" OFF
+  "CMAKE_VERSION VERSION_GREATER_EQUAL 3.28;
+  CMAKE_CXX_STANDARD GREATER_EQUAL 20;
+  CMAKE_GENERATOR STREQUAL Ninja" OFF
+)
+cmake_dependent_option(tsds_IMPORT_STD "Whether to use import std" OFF
+  "CMAKE_CXX_STANDARD GREATER_EQUAL 23" OFF
+)
+if(tsds_MODULE)
+  target_compile_definitions(tsds_compile_options INTERFACE TSDS_MODULE)
+  add_library(tsds_lib_module)
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    # otherwise, nasty GCC module bug.
+    # to be honest, even doing the other way doesn't fix it.
+  endif()
+  if(tsds_IMPORT_STD)
+    target_compile_definitions(tsds_compile_options INTERFACE TSDS_IMPORT_STD)
+  endif()
 endif()
 
 # ---- coverage ----
