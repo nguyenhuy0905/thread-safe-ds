@@ -16,8 +16,6 @@ class Recipe(ConanFile):
 
     def build_requirements(self):
         self.test_requires("catch2/[^3.8]")
-
-    def tool_requirements(self):
         self.tool_requires("cmake/[>=3.28]")
         self.tool_requires("ninja/[>=1.12]")
 
