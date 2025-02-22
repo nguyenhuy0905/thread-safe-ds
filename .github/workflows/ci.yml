@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-24.04, macos-15, windows-11 ]
-        compiler: [ gcc-14, llvm-18, llvm, msvc ]
+        compiler: [ gcc-14, llvm-18, apple-clang, msvc ]
         build_type: [ Debug, RelWithDebInfo ]
         exclude:
           - os: 'windows-11'
@@ -24,11 +24,11 @@ jobs:
           - os: 'windows-11'
             compiler: llvm-18
           - os: 'windows-11'
-            compiler: llvm
+            compiler: apple-clang
           - os: 'ubuntu-24.04'
             compiler: msvc
           - os: 'ubuntu-24.04'
-            compiler: llvm
+            compiler: apple-clang
           - os: 'macos-15'
             compiler: msvc
           - os: 'macos-15'
@@ -55,7 +55,7 @@ jobs:
             ${{ env.XDG_CACHE_HOME }}/ccache          
           key: ${{ runner.os }}-conan-${{ matrix.build_type }}-${{ hashFiles('**/CMakeLists.txt', '**/conanfile.py') }}
           restore-keys: |
-            ${{ runner.os }}-conan-${{ matrix.build_type }}
+            ${{ runner.os }}-conan-${{ matrix.build_type }}-
 
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
