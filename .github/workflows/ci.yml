@@ -85,13 +85,13 @@ jobs:
           CONAN_DOTDIR: ${{ steps.conan-dot.outputs.conan-dotdir }}
         with:
           path: ${{ steps.conan-dot.outputs.conan-dotdir }}
-          key: conan-cache-${{ runner.os }}-${{ hashFiles('**/pkglist.json') }}
+          key: conan-cache-${{ runner.os }}-${{ hashFiles('/*/pkglist.json') }}
 
       - name: Install conan dependencies
         if: ${{ steps.cache-conan.outputs.cache-hit != 'true' }}
         shell: bash
         run: |
-          bash ${{ github.workspace }}/tools/conan-ci.sh ${{ matrix.build_type }}
+          bash tools/conan-ci.sh ${{ matrix.build_type }}
 
       - name: Configure build
         shell: bash
