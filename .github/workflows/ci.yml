@@ -22,21 +22,21 @@ jobs:
         compiler: [ gcc-14, llvm-18, llvm, msvc ]
         build_type: [ Debug, RelWithDebInfo ]
         exclude:
-          - os: 'windows-latest'
+          - os: 'windows-11'
             compiler: gcc-14
-          - os: 'windows-latest'
+          - os: 'windows-11'
             compiler: llvm-18
-          - os: 'windows-latest'
+          - os: 'windows-11'
             compiler: llvm
-          - os: 'ubuntu-latest'
+          - os: 'ubuntu-24.04'
             compiler: msvc
-          - os: 'ubuntu-latest'
+          - os: 'ubuntu-24.04'
             compiler: llvm
-          - os: 'macos-latest'
+          - os: 'macos-15'
             compiler: msvc
-          - os: 'macos-latest'
+          - os: 'macos-15'
             compiler: llvm-18
-          - os: 'macos-latest'
+          - os: 'macos-15'
             compiler: gcc
 
     steps:
