@@ -21,24 +21,23 @@ jobs:
         os: [ ubuntu-24.04, macos-15, windows-11 ]
         compiler: [ gcc-14, llvm-18, llvm, msvc ]
         build_type: [ Debug, RelWithDebInfo ]
-
-      exclude:
-        - os: 'windows-latest'
-          compiler: gcc-14
-        - os: 'windows-latest'
-          compiler: llvm-18
-        - os: 'windows-latest'
-          compiler: llvm
-        - os: 'ubuntu-latest'
-          compiler: msvc
-        - os: 'ubuntu-latest'
-          compiler: llvm
-        - os: 'macos-latest'
-          compiler: msvc
-        - os: 'macos-latest'
-          compiler: llvm-18
-        - os: 'macos-latest'
-          compiler: gcc
+        exclude:
+          - os: 'windows-latest'
+            compiler: gcc-14
+          - os: 'windows-latest'
+            compiler: llvm-18
+          - os: 'windows-latest'
+            compiler: llvm
+          - os: 'ubuntu-latest'
+            compiler: msvc
+          - os: 'ubuntu-latest'
+            compiler: llvm
+          - os: 'macos-latest'
+            compiler: msvc
+          - os: 'macos-latest'
+            compiler: llvm-18
+          - os: 'macos-latest'
+            compiler: gcc
 
     steps:
       - uses: actions/checkout@v4
