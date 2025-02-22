@@ -78,9 +78,11 @@ jobs:
         if: matrix.os == 'windows-latest'
         id: cache-conan
         uses: action/cache@v4
+        env:
+          CONAN_DOTDIR: ${{ steps.conan-dot.outputs.conan-dotdir }}
         with:
-          path: ${{ steps.strings.outputs.conan-dotdir }}
-          key: conan-cache-${{ runner.os }}-${{ hashFiles(.*/pkglist.json) }}
+          path: ${{ steps.conan-dot.outputs.conan-dotdir }}
+          key: conan-cache-${{ runner.os }}-${{ hashFiles("${CONAN_DOTDIR}/.*/pkglist.json") }}
 
       - name: Install conan dependencies
         if: ${{ steps.cache-conan.outputs.cache-hit != 'true' }}
