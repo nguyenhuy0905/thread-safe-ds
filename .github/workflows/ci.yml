@@ -11,9 +11,6 @@ on:
 
 jobs:
   build:
-    env:
-      CC: ${{ matrix.c_compiler }}
-      CXX: ${{ matrix.cxx_compiler }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -37,7 +34,7 @@ jobs:
           - os: 'macos-15'
             compiler: llvm-18
           - os: 'macos-15'
-            compiler: gcc
+            compiler: gcc-14
 
     steps:
       - uses: actions/checkout@v4
@@ -84,9 +81,6 @@ jobs:
           -b missing
 
       - name: Conan install (LLVM)
-        env:
-          CC: clang
-          CXX: clang++
         if: ${{ matrix.compiler == 'llvm' }}
         run: |
           conan install . -s build_type=${{ matrix.build_type }} \
@@ -96,9 +90,6 @@ jobs:
 
       - name: Conan install (LLVM-18)
         if: ${{ matrix.compiler == 'llvm-18' }}
-        env:
-          CC: clang-18
-          CXX: clang++-18
         run: |
           conan install . -s build_type=${{ matrix.build_type }} \
           -s compiler=clang \
@@ -108,17 +99,11 @@ jobs:
 
       - name: CMake setup (Debug, GCC)
         if: ${{ matrix.build_type == 'Debug' && matrix.compiler == 'gcc-14' }}
-        env:
-          CC: gcc-14
-          CXX: g++-14
         run: | 
           cmake --preset=dev-conan
 
       - name: CMake setup (Debug, LLVM-18)
         if: ${{ matrix.build_type == 'Debug' && matrix.compiler == 'llvm-18' }}
-        env:
-          CC: clang-18
-          CXX: clang++-18
         run: | 
           cmake --preset=dev-conan
 
@@ -129,17 +114,11 @@ jobs:
 
       - name: CMake setup (RelWithDebInfo, GCC)
         if: ${{ matrix.build_type == 'RelWithDebInfo' && matrix.compiler == 'gcc-14' }}
-        env:
-          CC: gcc-14
-          CXX: g++-14
         run: | 
           cmake --preset=release-conan
 
       - name: CMake setup (RelWithDebInfo, LLVM-18)
         if: ${{ matrix.build_type == 'RelWithDebInfo' && matrix.compiler == 'llvm-18' }}
-        env:
-          CC: clang-18
-          CXX: clang++-18
         run: | 
           cmake --preset=release-conan
 
@@ -154,4 +133,4 @@ jobs:
 
       - name: Test
         run:
-          ctest --test-dir=build/${{ matrix.build_type }}
+          ctest --test-dir build/${{ matrix.build_type }}
