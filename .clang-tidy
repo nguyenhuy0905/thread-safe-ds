@@ -5,7 +5,8 @@ Checks:          "*,\
                   -fuchsia-*,\
                   -llvm*,\
                   -cppcoreguidelines-non-private-member-variables-in-classes,\
-                  -misc-non-private-member-variables-in-classes"
+                  -misc-non-private-member-variables-in-classes,\
+                  -misc-const-correctness"
 WarningsAsErrors: ''
 HeaderFileExtensions:
   - ''

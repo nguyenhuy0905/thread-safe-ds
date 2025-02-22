@@ -2,7 +2,12 @@ if(CMAKE_SKIP_INSTALL_RULES)
   return()
 endif()
 include(GNUInstallDirs)
-install(TARGETS tsds_lib
+if(tsds_MODULE)
+  set(tsds_INSTALLS tsds_module tsds_header)
+else()
+  set(tsds_INSTALLS tsds_header)
+endif()
+install(TARGETS ${tsds_INSTALLS}
   EXPORT tsdsTargets
   FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tsds
   FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tsds

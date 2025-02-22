@@ -26,7 +26,7 @@
         "name": "base-cfg",
         "hidden": true,
         "cacheVariables": {
-            "CMAKE_CXX_STANDARD": "23",
+            "CMAKE_CXX_STANDARD": "20",
             "CMAKE_CXX_EXTENSIONS": "OFF",
             "CMAKE_CXX_STANDARD_REQUIRED": "ON"
         }
@@ -46,11 +46,11 @@
         }
     },
     {
-        "name": "clang-tidy",
-        "hidden": true,
-        "cacheVariables": {
-            "CMAKE_CXX_CLANG_TIDY": "clang-tidy;--header-filter=^${sourceDir}/"
-        }
+      "name": "coverage",
+      "inherits": [ "base-cfg" ],
+      "cacheVariables": {
+        "tsds_COV": "ON"
+      }
     },
     {
         "name": "dev",
@@ -67,6 +67,10 @@
     {
         "name": "dev-conan",
         "inherits": ["dev", "conan"]
+    },
+    {
+        "name": "dev-ci",
+        "inherits": ["dev-conan", "coverage"]
     },
     {
         "name": "release",

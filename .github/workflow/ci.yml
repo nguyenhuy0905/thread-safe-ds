@@ -1,0 +1,112 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+    - master
+
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail_fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        build_type: [Debug, RelWithDebInfo]
+        c_compiler: [gcc, clang, cl]
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cxx_compiler: cl
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cxx_compiler: g++
+          - os: ubuntu-latest
+            c_compiler: clang
+            cxx_compiler: clang++
+            # hopefully this targets apple clang
+          - os: macos-latest
+            c_compiler: clang
+            cxx_compiler: clang++
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: clang
+          - os: macos-latest
+            c_compiler: gcc
+          - os: macos-latest
+            c_compiler: cl
+          - os: ubuntu-latest
+            c_compiler: cl
+    steps:
+      - if: runner.os == 'Windows'
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - uses: actions/checkout@v4
+
+      - name: Set build directory
+        id: strings
+        shell: bash
+        run: >
+          if [[ "${{ matrix.build_type }}" == "Debug" ]]; then
+            echo "build-output-dir=${{ github.workspace }}/build/dev" >> "$GITHUB_OUTPUT"
+          else
+            echo "build-output-dir=${{ github.workspace }}/build/rel" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install python
+        uses: actions/setup-python@v5
+        with: { python-version: "3.13" }
+
+      - name: Install conan
+        run: pip3 install conan
+
+      - name: Get conan dot directory
+        id: conan-dot
+        shell: bash
+        run: |
+          echo "conan-dotdir=$(conan config home)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache installed dependencies (Ubuntu/Mac)
+        if: matrix.os != 'windows-latest'
+        id: cache-conan
+        uses: action/cache@v4
+        with:
+          path: ${{ steps.strings.outputs.conan-dotdir }}
+          key: conan-cache-unix-${{ hashFiles(${{ steps.conan-dot.outputs.conan-dotdir }}/.*/pkglist.json) }}
+
+      - name: Cache installed dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        id: cache-conan
+        uses: action/cache@v4
+        with:
+          path: ${{ steps.strings.outputs.conan-dotdir }}
+          key: conan-cache-windows-${{ hashFiles(${{ steps.conan-dot.outputs.conan-dotdir }}/.*/pkglist.json) }}
+
+      - name: Install conan dependencies
+        if: ${{ steps.cache-conan.outputs.cache-hit != 'true' }}
+        shell: bash
+        run: |
+          bash ${{ github.workspace }}/tools/conan-ci.sh ${{ matrix.build_type }}
+
+      - name: Configure build
+        shell: bash
+        run: >
+          if [[ "${{ matrix.build_type }}" == "Debug" ]]; then
+            cmake --prest=dev-ci
+          else
+            cmake --prest=release-ci
+          fi
+
+      - name: Build
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+      - name: Test
+        run: ctest --test-dir ${{ steps.strings.outputs.build-output-dir }} --build-config ${{ matrix.build_type }}

@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <thread>
 #ifdef TSDS_MODULE
-import tsds_pool_alloc;
+import tsds.pool_alloc;
 #else
 #include "pool_alloc.hpp"
 #endif // TSDS_MODULE

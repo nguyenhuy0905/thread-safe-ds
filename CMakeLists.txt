@@ -21,15 +21,16 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
 # target_sources inside the src/ directory
 
-add_library(tsds_lib INTERFACE)
-target_compile_features(tsds_lib
+add_library(tsds_header INTERFACE)
+target_compile_features(tsds_header
   INTERFACE cxx_std_${CMAKE_CXX_STANDARD}
 )
-target_include_directories(tsds_lib ${WARNING_GUARD}
+target_include_directories(tsds_header ${WARNING_GUARD}
   INTERFACE
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
-add_library(tsds::tsds ALIAS tsds_lib)
+add_library(tsds::tsds_header ALIAS tsds_header)
 
 include(CMakeDependentOption)
 cmake_dependent_option(tsds_DEV "Enable if you plan to work on this project"
@@ -45,3 +46,4 @@ endif()
 if(NOT CMAKE_SKIP_INSTALL_RULES)
   include(cmake/install.cmake)
 endif()
+include(cmake/linter.cmake)

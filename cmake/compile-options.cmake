@@ -91,6 +91,13 @@ if(tsds_ASAN OR tsds_MSAN OR tsds_TSAN OR tsds_UBSAN)
   endif()
 endif()
 
+# ---- ccache ----
+option(tsds_CCACHE "Whether to use ccache" OFF)
+if(tsds_CCACHE)
+  find_program(ccache-prog ccache)
+
+endif()
+
 # ---- PCH ----
 option(tsds_PCH "Whether to build with PCH" OFF)
 if(tsds_PCH)

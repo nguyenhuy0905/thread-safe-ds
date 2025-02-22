@@ -1,13 +1,10 @@
 /**
- * @file pool_alloc.cpp
- * @brief Contains definitions of @ref tsds::PoolAlloc.
- */
-
-/**
  * @module tsds.pool_alloc
  * @brief Defines a fixed-size, thread-safe chunk allocator.
  * @see tsds::PoolAlloc
  */
+
+#ifdef TSDS_MODULE
 
 module;
 #include <array>
@@ -18,6 +15,7 @@ module;
 #include <memory>
 #include <ranges>
 #include <type_traits>
-export module tsds_pool_alloc;
+export module tsds.pool_alloc;
 
 #include "pool_alloc.hpp"
+#endif

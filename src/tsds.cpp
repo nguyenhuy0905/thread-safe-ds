@@ -7,6 +7,8 @@
  * - And some other document-related stuff.
  */
 
+#ifdef TSDS_MODULE
 module;
 export module tsds;
-export import tsds_pool_alloc;
+export import tsds.pool_alloc;
+#endif // TSDS_MODULE

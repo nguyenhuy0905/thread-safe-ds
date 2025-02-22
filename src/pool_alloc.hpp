@@ -1,3 +1,8 @@
+/**
+ * @file pool_alloc.hpp
+ * @brief Contains definitions of @ref tsds::PoolAlloc.
+ */
+
 #ifndef TSDS_POOL_ALLOC_HPP
 #define TSDS_POOL_ALLOC_HPP
 
@@ -8,6 +13,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <memory>
+#include <new>
 #include <ranges>
 #include <type_traits>
 #endif // !TSDS_MODULE
@@ -301,22 +307,20 @@ template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
 [[nodiscard]] constexpr auto
 PoolAlloc<T, NBlock, BuffInitAlloc>::allocate() noexcept -> pointer {
-  if consteval {
+  if (std::is_constant_evaluated()) {
     return static_cast<pointer>(::operator new(sizeof(T)));
-  } else {
-    return m_alloc_buf->allocate();
   }
+  return m_alloc_buf->allocate();
 }
 
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
 constexpr void
 PoolAlloc<T, NBlock, BuffInitAlloc>::deallocate(pointer t_p_obj) noexcept {
-  if consteval {
+  if (std::is_constant_evaluated()) {
     return ::operator delete(t_p_obj);
-  } else {
-    m_alloc_buf->deallocate(t_p_obj);
   }
+  m_alloc_buf->deallocate(t_p_obj);
 }
 
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
