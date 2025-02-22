@@ -1,7 +1,7 @@
 # Building
 
 - Requires a compiler with C++23 support, and module support. Doesn't need to
-support `import std;`.
+support import std.
 
 ## Release mode
 

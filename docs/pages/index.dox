@@ -1,0 +1,11 @@
+/**
+* \mainpage tsds - Thread-safe data structures
+* \tableofcontents
+* > A small collection of lock-free, thread-safe data structures.
+*
+* \note As of now, performance not benchmarked.
+* \include{doc} BUILDING.md
+* \section libref Library reference
+* \subpage library_reference
+* \section devref Developer reference
+*/

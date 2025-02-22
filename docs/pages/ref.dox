@@ -1,0 +1,14 @@
+/**
+* \page library_reference Reference page
+* \tableofcontents
+* \section alloc Allocators
+* \note All of these allocators can only allocate up until the requested size.
+* A thread-safe linked list using the default allocator can be used to deal
+* with this shortcoming. Will probably be developed someday.
+* \subsection pool_alloc Pool allocator
+* - \copybrief tsds::PoolAlloc
+* - Read \ref tsds::PoolAlloc
+* \subsection arena_alloc Arena allocator
+* - \copybrief tsds::ArenaAlloc
+* - Read \ref tsds::ArenaAlloc
+*/
