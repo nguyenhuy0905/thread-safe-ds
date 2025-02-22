@@ -98,7 +98,7 @@ jobs:
 
       - name: Activate conan env (Unix)
         if: runner.os != 'Windows'
-        run: source ${{ github.workspace }}\conan\conanbuild.sh
+        run: source ${{ github.workspace }}/conan/conanbuild.sh
 
       - name: Configure build
         shell: bash

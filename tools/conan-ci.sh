@@ -6,6 +6,7 @@ else
   echo "$1"
 fi)"
 
+conan profile detect -f
 profile="$(conan profile path default)"
 
 mv "$profile" "${profile}.bak"
