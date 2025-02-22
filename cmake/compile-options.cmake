@@ -36,7 +36,10 @@ endif()
 
 # ---- sanitizers ----
 cmake_dependent_option(tsds_ASAN "Whether to link with AddressSanitizer" ON
-  "PROJECT_IS_TOP_LEVEL;NOT tsds_MSAN;NOT tsds_TSAN;tsds_DEV" OFF)
+  "PROJECT_IS_TOP_LEVEL;
+  NOT tsds_MSAN;
+  NOT tsds_TSAN;
+  tsds_DEV" OFF)
 set(sanitizer_list "")
 if(tsds_ASAN)
   list(APPEND sanitizer_list "address")
@@ -44,11 +47,21 @@ endif()
 # MSan, TSan and ASan are mutually exclusive
 # MSan, TSan and UBSan are clang-and-gnu specific
 cmake_dependent_option(tsds_MSAN "Whether to link with MemorySanitizer" OFF
-  "PROJECT_IS_TOP_LEVEL;NOT tsds_ASAN;NOT tsds_TSAN;tsds_DEV" OFF)
+  "PROJECT_IS_TOP_LEVEL;
+  NOT tsds_ASAN;
+  NOT tsds_TSAN;
+  tsds_DEV;
+  NOT CMAKE_CXX_COMPILER_ID STREQUAL MSVC" OFF)
 cmake_dependent_option(tsds_TSAN "Whether to link with ThreadSanitizer" OFF
-  "PROJECT_IS_TOP_LEVEL;NOT tsds_ASAN;NOT tsds_MSAN;tsds_DEV" OFF)
+  "PROJECT_IS_TOP_LEVEL;
+  NOT tsds_ASAN;
+  NOT tsds_MSAN;
+  tsds_DEV;
+  NOT CMAKE_CXX_COMPILER_ID STREQUAL MSVC" OFF)
 cmake_dependent_option(tsds_UBSAN "Whether to link with"
-  "UndefinedBehaviorSanitizer" ON "PROJECT_IS_TOP_LEVEL;tsds_DEV" OFF)
+  "UndefinedBehaviorSanitizer" ON "PROJECT_IS_TOP_LEVEL;
+  tsds_DEV;
+  NOT CMAKE_CXX_COMPILER_ID STREQUAL MSVC" OFF)
 if(tsds_MSAN)
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang"
       OR
@@ -82,9 +95,10 @@ if(tsds_ASAN OR tsds_MSAN OR tsds_TSAN OR tsds_UBSAN)
     target_link_options(tsds_compile_options
         INTERFACE "-fsanitize=${sanitizer_opts}")
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # MSVC can't really use anything else anyways.
     target_compile_options(tsds_compile_options
       INTERFACE
-      "/fsanitize=${sanitizer_opts}"
+      "/fsanitize=address"
     )
     target_link_options(tsds_compile_options
         INTERFACE "/fsanitize=${sanitizer_opts}")
