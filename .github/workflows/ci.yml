@@ -97,9 +97,9 @@ jobs:
         shell: bash
         run: >
           if [[ "${{ matrix.build_type }}" == "Debug" ]]; then
-            cmake --preset=dev-ci
+            cmake --preset=dev-ci -G Ninja
           else
-            cmake --preset=release-ci
+            cmake --preset=release-ci -G Ninja
           fi
 
       - name: Build
