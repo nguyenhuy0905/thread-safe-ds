@@ -72,9 +72,9 @@ jobs:
 
       - name: Conan install
         run: |
-          conan install . -s build_type=${{ matrix.build_type }}\
-          -s compiler=${{ matrix.compiler }}\
-          -s compiler.cppstd=20\
+          conan install . -s build_type=${{ matrix.build_type }} \
+          -s compiler=${{ matrix.compiler }} \
+          -s compiler.cppstd=20 \
           -b missing
 
       - name: CMake setup
