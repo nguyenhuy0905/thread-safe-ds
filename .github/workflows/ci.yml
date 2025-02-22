@@ -12,8 +12,8 @@ on:
 jobs:
   build:
     env:
-      - CC: ${{ matrix.c_compiler }}
-      - CXX: ${{ matrix.cxx_compiler }}
+      CC: ${{ matrix.c_compiler }}
+      CXX: ${{ matrix.cxx_compiler }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
