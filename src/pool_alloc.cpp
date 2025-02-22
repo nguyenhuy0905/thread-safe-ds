@@ -30,8 +30,12 @@ namespace tsds {
  * @brief A fix-sized pool allocator.
  * @tparam T The type to alloc.
  * @tparam NBlock The maximum number of T that can be held.
+ * @tparam BuffInitAlloc The allocator used to allocate the buffer. Only used
+ * once.
  * @warning This allocator's allocations are @b not constexpr. For that purpose,
  * just use the "normal" global-state @c ::operator new()
+ *
+ * Manages a buffer allocated by @e BuffInitAlloc.
  *
  * This class does NOT satisfies the named requirement
  * [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator).
@@ -42,11 +46,14 @@ namespace tsds {
  * take in an extra parameter @c n, and return a pointer to @c T[n].
  * This allocator simply doesn't do that.
  */
-export TSDS_EXPORT template <class T, std::size_t NBlock>
+export TSDS_EXPORT template <class T, std::size_t NBlock,
+                             class BuffInitAlloc =
+                                 std::allocator<std::array<T, NBlock>>>
   requires std::is_same_v<T, std::remove_reference_t<T>>
 class PoolAlloc {
-  // https://en.cppreference.com/w/cpp/named_req/Allocator
 public:
+  constexpr PoolAlloc() noexcept(noexcept(BuffInitAlloc{}.allocate(NBlock))) =
+      default;
   // NOLINTBEGIN(*identifier-naming*)
   /// @{
   using value_type = T;
@@ -83,7 +90,7 @@ public:
    * requirement, simply because it doesn't need to. Refer to the document of
    * @ref tsds::PoolAlloc for a brief explanation.
    */
-  auto allocate() noexcept -> pointer;
+  constexpr auto allocate() noexcept -> pointer;
 
   /**
    * @brief Releases the memory held by @a t_p_obj back.
@@ -99,7 +106,7 @@ public:
    * @warning Please only let exactly @b one thread deallocate. Fortunately,
    * this is the behavior that smart pointers support.
    */
-  void deallocate(pointer t_p_obj) noexcept;
+  constexpr void deallocate(pointer t_p_obj) noexcept;
   /**
    * @brief Just returns @a NBlock
    * @return NBlock.
@@ -132,14 +139,14 @@ private:
    * @see tsds::PoolAlloc::AllocBuf
    */
   struct AllocSlot {
-    AllocSlot() = default;
+    constexpr AllocSlot() = default;
     /**
      * @brief Convenient initialization function for @ref AllocSlot
      *
      * @param t_p_next Initializes @ref next
      * @param t_p_blk Initializes @ref blk
      */
-    AllocSlot(AllocSlot* t_p_next, pointer t_p_blk)
+    constexpr AllocSlot(AllocSlot* t_p_next, pointer t_p_blk)
         : next(t_p_next), blk(t_p_blk) {}
     /// Pointer to the next @ref AllocSlot in the linked list.
     std::atomic<AllocSlot*> next;
@@ -171,21 +178,21 @@ private:
 };
 
 /// @cond
-template <class T, std::size_t NBlock>
+template <class T, std::size_t NBlock, class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-class PoolAlloc<T, NBlock>::AllocBuf {
+class PoolAlloc<T, NBlock, BuffInitAlloc>::AllocBuf {
 public:
-  AllocBuf() noexcept
-      : m_init_flag{true}, m_buff{reinterpret_cast<T*>(           // NOLINT
-                               std::malloc(sizeof(T) * NBlock))}, // NOLINT
+  AllocBuf() noexcept(noexcept(BuffInitAlloc{}.allocate(NBlock)))
+      : m_init_flag{true}, m_buff(m_buff_alloc.allocate(NBlock), m_del),
         m_head{m_slot_list.begin()} {
     AllocSlot* last_slot = nullptr;
-    std::size_t idx = 0;
-    for (auto& slot : m_slot_list | std::views::reverse) {
-      slot.blk = m_buff.get() + idx;
+    for (std::tuple<AllocSlot&, std::add_lvalue_reference_t<T>> slot_block :
+         std::views::zip(m_slot_list, *m_buff) | std::views::reverse) {
+      auto& slot = std::get<0>(slot_block);
+      slot.blk = &std::get<1>(slot_block);
+      // slot.blk = m_buff->data() + idx;
       slot.next = last_slot;
       last_slot = &slot;
-      ++idx;
     }
 
     m_init_flag.clear(std::memory_order::release);
@@ -207,10 +214,32 @@ public:
   void deallocate(pointer t_p_obj) noexcept;
 
 private:
-  struct BufferDeallocator {
-    void operator()(pointer t_p_buff) noexcept {
-      std::free(t_p_buff); // NOLINT(*no-malloc*)
+  /**
+   * @class BuffDeleter
+   * @brief Custom deleter for @ref m_buff
+   *
+   */
+  class BuffDeleter {
+  public:
+    explicit constexpr BuffDeleter(BuffInitAlloc& t_alloc) noexcept
+        : m_alloc{t_alloc} {}
+    BuffDeleter(const BuffDeleter&) = delete;
+    BuffDeleter(BuffDeleter&&) = delete;
+    auto operator=(const BuffDeleter&) = delete;
+    auto operator=(BuffDeleter&&) = delete;
+    ~BuffDeleter() = default;
+    constexpr void operator()(std::array<T, NBlock>* t_p_ptr) noexcept(
+        noexcept(m_alloc.deallocate(t_p_ptr, NBlock))) {
+      m_alloc.deallocate(t_p_ptr, NBlock);
     }
+
+  private:
+    /**
+     * @brief Reference to @tsds::PoolAlloc::AllocBuf::BuffInitAlloc
+     *
+     * I know the naming is confusing.
+     */
+    BuffInitAlloc& m_alloc;
   };
   /**
    * @brief Blocks all allocations until initialization is finished.
@@ -224,6 +253,14 @@ private:
    */
   std::atomic_flag m_init_flag;
   /**
+   * @brief One-time allocator used for allocating the buffer @ref m_buff.
+   */
+  BuffInitAlloc m_buff_alloc{};
+  /**
+   * @brief The deleter for the buffer @ref m_buff.
+   */
+  [[no_unique_address]] BuffDeleter m_del{m_buff_alloc};
+  /**
    * @brief Holds instances @ref AllocSlot.
    *
    * @ref AllocSlot themselves form a linked list. This array simply holds the
@@ -233,7 +270,8 @@ private:
   /**
    * @brief The buffer.
    */
-  const std::unique_ptr<T, BufferDeallocator> m_buff; // NOLINT(*avoid-c-array*)
+  std::unique_ptr<std::array<T, NBlock>, BuffDeleter&>
+      m_buff; // NOLINT(*avoid-c-array*)
   /**
    * @brief The head of the slot list. Doesn't necessarily have to be the
    * slot with the lowest/highest memory position.
@@ -241,38 +279,46 @@ private:
   std::atomic<AllocSlot*> m_head;
 };
 
-template <class T, std::size_t NBlock>
+template <class T, std::size_t NBlock, class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-[[nodiscard]] constexpr auto
-PoolAlloc<T, NBlock>::operator==(const PoolAlloc& t_other) const noexcept
-    -> bool {
+[[nodiscard]] constexpr auto PoolAlloc<T, NBlock, BuffInitAlloc>::operator==(
+    const PoolAlloc& t_other) const noexcept -> bool {
   return m_alloc_buf == t_other.m_alloc_buf;
 }
 
-template <class T, std::size_t NBlock>
+template <class T, std::size_t NBlock, class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-[[nodiscard]] constexpr auto
-PoolAlloc<T, NBlock>::operator!=(const PoolAlloc& t_other) const noexcept
-    -> bool {
+[[nodiscard]] constexpr auto PoolAlloc<T, NBlock, BuffInitAlloc>::operator!=(
+    const PoolAlloc& t_other) const noexcept -> bool {
   return m_alloc_buf != t_other.m_alloc_buf;
 }
 
-template <class T, std::size_t NBlock>
+template <class T, std::size_t NBlock, class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-[[nodiscard]] auto PoolAlloc<T, NBlock>::allocate() noexcept -> pointer {
-  return m_alloc_buf->allocate();
+[[nodiscard]] constexpr auto
+PoolAlloc<T, NBlock, BuffInitAlloc>::allocate() noexcept -> pointer {
+  if consteval {
+    return static_cast<pointer>(::operator new(sizeof(T)));
+  } else {
+    return m_alloc_buf->allocate();
+  }
 }
 
-template <class T, std::size_t NBlock>
+template <class T, std::size_t NBlock, class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-void PoolAlloc<T, NBlock>::deallocate(pointer t_p_obj) noexcept {
-  m_alloc_buf->deallocate(t_p_obj);
+constexpr void
+PoolAlloc<T, NBlock, BuffInitAlloc>::deallocate(pointer t_p_obj) noexcept {
+  if consteval {
+    return ::operator delete(t_p_obj);
+  } else {
+    m_alloc_buf->deallocate(t_p_obj);
+  }
 }
 
-template <class T, std::size_t NBlock>
+template <class T, std::size_t NBlock, class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-[[nodiscard]] auto PoolAlloc<T, NBlock>::AllocBuf::allocate() noexcept
-    -> pointer {
+[[nodiscard]] auto
+PoolAlloc<T, NBlock, BuffInitAlloc>::AllocBuf::allocate() noexcept -> pointer {
   // wait until initialization finishes.
   // We don't need to get the "spinlock" here.
   if (m_init_flag.test()) {
@@ -296,10 +342,11 @@ template <class T, std::size_t NBlock>
   return curr_head->blk;
 }
 
-template <class T, std::size_t NBlock>
+template <class T, std::size_t NBlock, class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-void PoolAlloc<T, NBlock>::AllocBuf::deallocate(pointer t_p_obj) noexcept {
-  auto t_idx = static_cast<size_type>(t_p_obj - m_buff.get());
+void PoolAlloc<T, NBlock, BuffInitAlloc>::AllocBuf::deallocate(
+    pointer t_p_obj) noexcept {
+  auto t_idx = static_cast<size_type>(t_p_obj - m_buff->data());
   auto* slot = &m_slot_list.at(t_idx);
   auto curr_head = m_head.load(std::memory_order::relaxed);
   while (!m_head.compare_exchange_weak(curr_head, slot,
