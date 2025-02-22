@@ -88,7 +88,7 @@ jobs:
         uses: action/cache@v4
         with:
           path: ${{ steps.strings.outputs.conan-dotdir }}
-          key: conan-cache-windows-${{ hashFiles(${{ steps.conan-dot.outputs.conan-dotdir }}/.*/pkglist.json) }}
+          key: conan-cache-windows-${{ hashFiles(.*/pkglist.json) }}
 
       - name: Install conan dependencies
         if: ${{ steps.cache-conan.outputs.cache-hit != 'true' }}
