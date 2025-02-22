@@ -56,9 +56,9 @@ jobs:
             ~/Library/Caches/ccache
             ${{ env.LOCALAPPDATA }}/ccache
             ${{ env.XDG_CACHE_HOME }}/ccache          
-          key: ${{ runner-os }}-conan-${{ matrix.build_type }}-${{ hashFiles('**/CMakeLists.txt', '**/conanfile.py') }}
+          key: ${{ runner.os }}-conan-${{ matrix.build_type }}-${{ hashFiles('**/CMakeLists.txt', '**/conanfile.py') }}
           restore-keys: |
-            ${{ runner-os }}-conan-${{ matrix.build_type }}
+            ${{ runner.os }}-conan-${{ matrix.build_type }}
 
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
