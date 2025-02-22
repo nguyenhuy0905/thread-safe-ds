@@ -76,13 +76,6 @@
         "inherits": ["dev", "conan"]
     },
     {
-        "name": "dev-ci",
-        "inherits": ["dev-conan"],
-        "cacheVariables": {
-          "tsds_DOCS": "OFF"
-        }
-    },
-    {
         "name": "release",
         "binaryDir": "${sourceDir}/build/RelWithDebInfo",
         "inherits": ["base-cfg"],
@@ -93,13 +86,6 @@
     {
         "name": "release-conan",
         "inherits": ["release", "conan"]
-    },
-    {
-      "name": "release-ci",
-      "inherits": ["release-conan", "test"],
-        "cacheVariables": {
-          "tsds_DOCS": "OFF"
-        }
     }
     ]
 }
