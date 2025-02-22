@@ -6,10 +6,16 @@ else
   echo "$1"
 fi)"
 
-conan profile detect -f
-conan profile update settings.compiler="$CC" default
-conan profile update settings.compiler.cppstd=20 default
-conan profile update conf.tools.cmake.cmaketoolchain:generator=Ninja default
+profile="$(conan profile path default)"
+
+mv "$profile" "${profile}.bak"
+sed 's/^\(compiler\.cppstd=\).\{1,\}$/\120' "${profile}.bak" > "$profile"
+rm "${profile}.bak"
+cat << EOF >> "${profile}"
+
+[conf]
+tools.cmake.cmaketoolchain:generator=Ninja
+EOF
 IFS=' ' read -r -a buildtyp <<<"${buildtyp}"
 
 if [ -f conan_cache_save.tgz ]; then
