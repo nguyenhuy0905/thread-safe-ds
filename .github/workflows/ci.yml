@@ -86,11 +86,13 @@ jobs:
           path: ${{ steps.conan-dot.outputs.conan-dotdir }}
           key: conan-cache-${{ runner.os }}-${{ hashFiles('**/conan.lock') }}
 
-      - name: Install conan dependencies
+      - name: Setup conan profile
         if: ${{ steps.cache-conan.outputs.cache-hit != 'true' }}
-        shell: bash
         run: |
           conan profile detect -f
+
+      - name: Install conan dependencies
+        run: |
           conan install . -s compiler="$CC"\
                 -s compiler.cppstd=20 \
                 -c tools.cmake.cmaketoolchain:generator=Ninja
