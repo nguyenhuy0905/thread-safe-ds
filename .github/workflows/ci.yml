@@ -70,7 +70,7 @@ jobs:
       - name: Setup conan profile
         run: conan profile detect -f
 
-      - name: Conan install (GCC)
+      - name: Conan install (GCC-14)
         if: ${{ matrix.compiler == 'gcc-14' }}
         run: |
           conan install . -s build_type=${{ matrix.build_type }} \
@@ -78,14 +78,6 @@ jobs:
           -s compiler.libcxx=libstdc++ \
           -s compiler.cppstd=20 \
           -s compiler.version=14 \
-          -b missing
-
-      - name: Conan install (LLVM)
-        if: ${{ matrix.compiler == 'llvm' }}
-        run: |
-          conan install . -s build_type=${{ matrix.build_type }} \
-          -s compiler=apple-clang \
-          -s compiler.cppstd=20 \
           -b missing
 
       - name: Conan install (LLVM-18)
@@ -97,35 +89,22 @@ jobs:
           -s compiler.version=18 \
           -b missing
 
-      - name: CMake setup (Debug, GCC)
-        if: ${{ matrix.build_type == 'Debug' && matrix.compiler == 'gcc-14' }}
+      - name: Conan install (Otherwise)
+        if: ${{ matrix.compiler != 'gcc-14' || matrix.compiler != 'clang-18' }}
+        run: |
+          conan install . -s build_type=${{ matrix.build_type }} \
+          -s compiler.cppstd=20 \
+          -b missing
+
+      - name: CMake setup (Debug)
+        if: ${{ matrix.build_type == 'Debug' }}
         run: | 
           cmake --preset=dev-conan
 
-      - name: CMake setup (Debug, LLVM-18)
-        if: ${{ matrix.build_type == 'Debug' && matrix.compiler == 'llvm-18' }}
-        run: | 
-          cmake --preset=dev-conan
-
-      - name: CMake setup (Debug, no-special-compiler)
-        if: ${{ matrix.build_type == 'Debug' && matrix.compiler != 'llvm-18' && matrix.compiler != 'gcc-14' }}
-        run: | 
-          cmake --preset=dev-conan
-
-      - name: CMake setup (RelWithDebInfo, GCC)
-        if: ${{ matrix.build_type == 'RelWithDebInfo' && matrix.compiler == 'gcc-14' }}
+      - name: CMake setup (RelWithDebInfo)
+        if: ${{ matrix.build_type == 'RelWithDebInfo' }}
         run: | 
           cmake --preset=release-conan
-
-      - name: CMake setup (RelWithDebInfo, LLVM-18)
-        if: ${{ matrix.build_type == 'RelWithDebInfo' && matrix.compiler == 'llvm-18' }}
-        run: | 
-          cmake --preset=release-conan
-
-      - name: CMake setup (RelWithDebInfo, no-special-compiler)
-        if: ${{ matrix.build_type == 'RelWithDebInfo' && matrix.compiler != 'llvm-18' && matrix.compiler != 'gcc-14' }}
-        run: | 
-          cmake --preset=dev-conan
 
       - name: Build
         run:
