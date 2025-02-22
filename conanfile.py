@@ -19,5 +19,5 @@ class Recipe(ConanFile):
 
     def tool_requirements(self):
         self.tool_requires("cmake/[>=3.28]")
-        self.tool_requires("ninja/[~1.12]")
+        self.tool_requires("ninja/[>=1.12]")
 

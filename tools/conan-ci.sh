@@ -7,9 +7,10 @@ else
 fi)"
 
 conan profile detect -f
-profile="$(conan profile path default)"
-sed -i -Ef "$(dirname "$0")"/conan.sed "${profile}"
-IFS=' ' read -r -a buildtyp <<< "${buildtyp}"
+conan profile update settings.compiler="$CC" default
+conan profile update settings.compiler.cppstd=20 default
+conan profile update conf.tools.cmake.cmaketoolchain:generator=Ninja default
+IFS=' ' read -r -a buildtyp <<<"${buildtyp}"
 
 if [ -f conan_cache_save.tgz ]; then
   conan cache restore conan_cache_save.tgz
