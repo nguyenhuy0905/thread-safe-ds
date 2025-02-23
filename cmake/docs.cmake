@@ -1,7 +1,7 @@
 include(CMakeDependentOption)
 cmake_dependent_option(tsds_DOCS
   "Whether to generate documents with Doxygen"
-  ON "PROJECT_IS_TOP_LEVEL;tsds_DEV" OFF)
+  ON "PROJECT_IS_TOP_LEVEL" OFF)
 if(tsds_DOCS)
   find_package(Doxygen REQUIRED)
   set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/docs")

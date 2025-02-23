@@ -1,10 +1,10 @@
+#ifdef TSDS_MODULE
+
 /**
  * @module tsds.pool_alloc
  * @brief Defines a fixed-size, thread-safe chunk allocator.
  * @see tsds::PoolAlloc
  */
-
-#ifdef TSDS_MODULE
 
 module;
 #include <array>

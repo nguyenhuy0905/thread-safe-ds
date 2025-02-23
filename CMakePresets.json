@@ -55,9 +55,11 @@
     },
     {
       "name": "docs",
-      "inherits": [ "base-cfg" ],
+      "description": "Only there to generate documentation, not for building a binary",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "tsds_DOCS": "ON"
+        "tsds_DOCS": "ON",
+        "CMAKE_CXX_FLAGS": "-D TSDS_MODULE"
       }
     },
     {
@@ -78,9 +80,9 @@
     },
     {
         "name": "dev-ci",
-        "inherits": ["dev-conan"]
+        "inherits": ["dev-conan"],
         "cacheVariables": {
-          "tsds_DOCS": "OFF"
+          "tsds_DOCS": "OFF",
           "tsds_COV": "OFF"
         }
     },
@@ -98,11 +100,11 @@
     },
     {
         "name": "release-ci",
-        "inherits": ["release-conan"]
+        "inherits": ["release-conan"],
         "cacheVariables": {
-          "tsds_DOCS": "OFF"
+          "tsds_DOCS": "OFF",
           "tsds_COV": "OFF"
         }
-    },
+    }
     ]
 }

@@ -94,10 +94,28 @@ jobs:
         run: |
           ctest --test-dir build/${{ matrix.build_type }}
 
-      - name: Deploy
+  gh-page:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install cmake doxygen graphviz -y
+
+      - name: Configure CMake
+        run: cmake --preset docs
+
+      - name: Build docs
+        run: cmake --build build --target docs
+
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
-        # I simply chose 1 instance only to deploy docs.
-        if: ${{ github.ref == 'refs/heads/master' matrix.os == 'ubuntu-24' && matrix.build_type == 'Debug' && matrix.compiler == 'gcc-14' }}
+        if: github.ref == 'refs/heads/master'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-        run:
+          publish_dir: ./build/docs/html
+
