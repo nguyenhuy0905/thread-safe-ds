@@ -184,8 +184,7 @@ template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
 class PoolAlloc<T, NBlock, BuffInitAlloc>::AllocBuf {
 public:
   constexpr AllocBuf() noexcept(noexcept(BuffAllocType{}.allocate(NBlock)))
-      : m_init_flag{true}, m_buff(m_buff_alloc.allocate(NBlock), m_del),
-        m_head{m_slot_list.begin()} {
+      : m_buff(m_buff_alloc.allocate(NBlock), m_del) {
     AllocSlot* last_slot = nullptr;
     // std::views::zip hasn't landed in libstdc++
     // for (std::tuple<AllocSlot&, std::add_lvalue_reference_t<T>> slot_block :
@@ -204,8 +203,9 @@ public:
       slot.next = last_slot;
       last_slot = &slot;
     }
+    m_head.store(m_slot_list.data(), std::memory_order::relaxed);
 
-    m_init_flag.clear(std::memory_order::release);
+    m_init_flag.test_and_set(std::memory_order::release);
     m_init_flag.notify_all();
   }
   AllocBuf(const AllocBuf&) = delete;
@@ -259,9 +259,9 @@ private:
    * That's why it needs to be placed as the first member.
    *
    * @ref allocate will need to check (but doesn't need to acquire) if the
-   * flag is false.
+   * flag is true.
    */
-  std::atomic_flag m_init_flag;
+  std::atomic_flag m_init_flag = ATOMIC_FLAG_INIT;
   /**
    * @brief One-time allocator used for allocating the buffer @ref m_buff.
    */
@@ -286,7 +286,7 @@ private:
    * @brief The head of the slot list. Doesn't necessarily have to be the
    * slot with the lowest/highest memory position.
    */
-  std::atomic<AllocSlot*> m_head;
+  std::atomic<AllocSlot*> m_head{};
 };
 
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
@@ -329,8 +329,8 @@ template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
 PoolAlloc<T, NBlock, BuffInitAlloc>::AllocBuf::allocate() noexcept -> pointer {
   // wait until initialization finishes.
   // We don't need to get the "spinlock" here.
-  if (m_init_flag.test()) {
-    m_init_flag.wait(true, std::memory_order::relaxed);
+  if (!m_init_flag.test()) {
+    m_init_flag.wait(false, std::memory_order::relaxed);
   }
 
   auto curr_head = m_head.load(std::memory_order::relaxed);

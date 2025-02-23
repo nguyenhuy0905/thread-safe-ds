@@ -47,6 +47,7 @@
     },
     {
       "name": "coverage",
+      "hidden": true,
       "inherits": [ "base-cfg" ],
       "cacheVariables": {
         "tsds_COV": "ON"
@@ -76,6 +77,14 @@
         "inherits": ["dev", "conan"]
     },
     {
+        "name": "dev-ci",
+        "inherits": ["dev-conan"]
+        "cacheVariables": {
+          "tsds_DOCS": "OFF"
+          "tsds_COV": "OFF"
+        }
+    },
+    {
         "name": "release",
         "binaryDir": "${sourceDir}/build/RelWithDebInfo",
         "inherits": ["base-cfg"],
@@ -86,6 +95,14 @@
     {
         "name": "release-conan",
         "inherits": ["release", "conan"]
-    }
+    },
+    {
+        "name": "release-ci",
+        "inherits": ["release-conan"]
+        "cacheVariables": {
+          "tsds_DOCS": "OFF"
+          "tsds_COV": "OFF"
+        }
+    },
     ]
 }
