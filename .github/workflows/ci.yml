@@ -76,15 +76,25 @@ jobs:
           -s compiler.cppstd=20
           -b missing
 
-      - name: CMake setup (Debug)
-        if: ${{ matrix.build_type == 'Debug' }}
+      - name: CMake setup (Debug, Unix)
+        if: ${{ matrix.build_type == 'Debug' && runner.os != 'Windows' }}
         run: |
-          cmake --preset=dev-ci
+          cmake --preset=dev-ci-unix
 
-      - name: CMake setup (RelWithDebInfo)
-        if: ${{ matrix.build_type == 'RelWithDebInfo' }}
+      - name: CMake setup (RelWithDebInfo, Unix)
+        if: ${{ matrix.build_type == 'RelWithDebInfo' && runner.os != 'Windows' }}
         run: | 
-          cmake --preset=release-ci
+          cmake --preset=release-ci-unix
+
+      - name: CMake setup (Debug, Windows)
+        if: ${{ matrix.build_type == 'Debug' && runner.os == 'Windows' }}
+        run: |
+          cmake --preset=dev-ci-msvc
+
+      - name: CMake setup (RelWithDebInfo, Windows)
+        if: ${{ matrix.build_type == 'RelWithDebInfo' && runner.os == 'Windows' }}
+        run: | 
+          cmake --preset=release-ci-msvc
 
       - name: Build
         run: |

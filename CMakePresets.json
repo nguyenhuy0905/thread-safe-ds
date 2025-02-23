@@ -1,42 +1,42 @@
 {
-    "version": 8,
-    "cmakeMinimumRequired": {
-        "major": 3,
-        "minor": 28,
-        "patch": 0
-    },
-    "configurePresets": [
+  "version": 8,
+  "cmakeMinimumRequired": {
+      "major": 3,
+      "minor": 28,
+      "patch": 0
+  },
+  "configurePresets": [
     {
-        "name": "cmake-pedantic",
-        "description": "(C)Make great again",
-        "hidden": true,
-        "warnings": {
-            "dev": true,
-            "deprecated": true,
-            "uninitialized": true,
-            "unusedCli": true,
-            "systemVars": false
-        },
-        "errors": {
-            "dev": true,
-            "deprecated": true
-        }
-    },
-    {
-        "name": "base-cfg",
-        "hidden": true,
-        "cacheVariables": {
-            "CMAKE_CXX_STANDARD": "20",
-            "CMAKE_CXX_EXTENSIONS": "OFF",
-            "CMAKE_CXX_STANDARD_REQUIRED": "ON"
-        }
+      "name": "cmake-pedantic",
+      "description": "(C)Make great again",
+      "hidden": true,
+      "warnings": {
+        "dev": true,
+        "deprecated": true,
+        "uninitialized": true,
+        "unusedCli": true,
+        "systemVars": false
+      },
+      "errors": {
+        "dev": true,
+        "deprecated": true
+      }
     },
     {
-        "name": "test",
-        "hidden": true,
-        "cacheVariables": {
-            "BUILD_TESTING": "ON"
-        }
+      "name": "base-cfg",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON"
+      }
+    },
+    {
+      "name": "test",
+      "hidden": true,
+      "cacheVariables": {
+        "BUILD_TESTING": "ON"
+      }
     },
     {
       "name": "coverage",
@@ -56,54 +56,85 @@
       }
     },
     {
-        "name": "dev",
-        "inherits": ["cmake-pedantic", "base-cfg", "test"],
-        "binaryDir": "${sourceDir}/build/Debug",
-        "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Debug",
-            "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-            "tsds_ASAN": "ON",
-            "tsds_UBSAN": "ON",
-            "tsds_DEV": "ON"
-        }
+      "name": "dev",
+      "description": "Only there to generate documentation, not for building a binary",
+      "inherits": ["cmake-pedantic", "base-cfg", "test"],
+      "binaryDir": "${sourceDir}/build/Debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "tsds_ASAN": "ON",
+        "tsds_UBSAN": "ON",
+        "tsds_DEV": "ON"
+      }
     },
     {
-        "name": "dev-conan",
-        "inherits": ["dev"],
-        "cacheVariables": {
-          "CMAKE_TOOLCHAIN_FILE": "build/Debug/generators/conan_toolchain.cmake"
-        }
+      "name": "dev-conan-unix",
+      "inherits": ["dev"],
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "build/Debug/generators/conan_toolchain.cmake"
+      }
     },
     {
-        "name": "dev-ci",
-        "inherits": ["dev-conan"],
-        "cacheVariables": {
-          "tsds_DOCS": "OFF",
-          "tsds_COV": "OFF"
-        }
+      "name": "dev-conan-msvc",
+      "inherits": ["dev"],
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "build/generators/conan_toolchain.cmake"
+      }
     },
     {
-        "name": "release",
-        "binaryDir": "${sourceDir}/build/RelWithDebInfo",
-        "inherits": ["base-cfg"],
-        "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-        }
+      "name": "dev-ci-unix",
+      "inherits": ["dev-conan-unix"],
+      "cacheVariables": {
+        "tsds_DOCS": "OFF",
+        "tsds_COV": "OFF"
+      }
     },
     {
-        "name": "release-conan",
-        "inherits": ["release"],
-        "cacheVariables": {
-          "CMAKE_TOOLCHAIN_FILE": "build/RelWithDebInfo/generators/conan_toolchain.cmake"
-        }
+      "name": "dev-ci-msvc",
+      "inherits": ["dev-conan-msvc"],
+      "cacheVariables": {
+        "tsds_DOCS": "OFF",
+        "tsds_COV": "OFF"
+      }
     },
     {
-        "name": "release-ci",
-        "inherits": ["release-conan", "test"],
-        "cacheVariables": {
-          "tsds_DOCS": "OFF",
-          "tsds_COV": "OFF"
-        }
+      "name": "release",
+      "binaryDir": "${sourceDir}/build/RelWithDebInfo",
+      "inherits": ["base-cfg"],
+      "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "release-conan-unix",
+      "inherits": ["release"],
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "build/RelWithDebInfo/generators/conan_toolchain.cmake"
+      }
+    },
+    {
+      "name": "release-conan-msvc",
+      "inherits": ["release"],
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "build/generators/conan_toolchain.cmake"
+      }
+    },
+    {
+      "name": "release-ci-unix",
+      "inherits": ["release-conan-unix", "test"],
+      "cacheVariables": {
+        "tsds_DOCS": "OFF",
+        "tsds_COV": "OFF"
+      }
+    },
+    {
+      "name": "release-ci-msvc",
+      "inherits": ["release-conan-msvc", "test"],
+      "cacheVariables": {
+        "tsds_DOCS": "OFF",
+        "tsds_COV": "OFF"
+      }
     }
-    ]
+  ]
 }
