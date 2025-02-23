@@ -11,8 +11,6 @@ import tsds.pool_alloc;
 #include "pool_alloc.hpp"
 #endif // TSDS_MODULE
 
-TEST_CASE("Placebo") { REQUIRE(1 == 1); }
-
 // NOLINTBEGIN(*function-cognitive-complexity*)
 TEST_CASE("Hopefully it compiles") {
   constexpr std::size_t POOL_NUM = 1024;

@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <memory>
+#include <mutex>
 #include <new>
 #include <ranges>
 #include <type_traits>
@@ -33,9 +34,11 @@ namespace tsds {
  * once.
  * @important This class does NOT satisfies the named requirement
  * [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator).
- * @note In @c constexpr context, all allocations fall back to @c ::operator new
  * @important At the moment of writing, @c shared_ptr is @b not @c constexpr.
  * So, as much as we hate it, this allocator is not @c constexpr.
+ * @important This class holds a @c shared_ptr (whose constructor is, currently,
+ * the default allocator) to the allocation buffer.
+ * @note In @c constexpr context, all allocations fall back to @c ::operator new
  *
  * Manages a buffer allocated by @e BuffInitAlloc.
  *
@@ -50,8 +53,18 @@ template <class T, std::size_t NBlock,
   requires std::is_same_v<T, std::remove_reference_t<T>>
 class PoolAlloc {
 public:
-  constexpr PoolAlloc() noexcept(noexcept(BuffAllocType{}.allocate(NBlock))) =
-      default;
+  constexpr PoolAlloc() noexcept(noexcept(BuffAllocType{}.allocate(NBlock)) &&
+                                 noexcept(std::make_unique<AllocBuf>())) {
+    get_alloc_buf();
+  }
+  constexpr PoolAlloc(const PoolAlloc&) noexcept; // NOLINT(*named-parameter*)
+  constexpr PoolAlloc(PoolAlloc&&) noexcept;      // NOLINT(*named-parameter*)
+  constexpr auto
+  operator=(const PoolAlloc&) noexcept // NOLINT(*named-parameter*)
+      -> PoolAlloc&;
+  constexpr auto operator=(PoolAlloc&&) noexcept // NOLINT(*named-parameter*)
+      -> PoolAlloc&;
+  ~PoolAlloc() = default;
   // NOLINTBEGIN(*identifier-naming*)
   /**
    * @name Type definitions
@@ -68,7 +81,7 @@ public:
   using difference_type = std::ptrdiff_t;
   static constexpr bool is_always_equal = false;
   template <typename Other> struct rebind {
-    using other = PoolAlloc<Other, NBlock>;
+    using other = PoolAlloc<Other, NBlock, BuffInitAlloc>;
   };
   /// @}
   // NOLINTEND(*identifier-naming*)
@@ -163,17 +176,28 @@ private:
   class AllocBuf;
 
   /**
+   * @brief Ensure that @ref m_alloc_buf has been fully initialized before
+   * any call to @ref allocate can take place.
+   * @important Only @c constexpr if @c shared_ptr has @c constexpr move.
+   */
+  constexpr auto get_alloc_buf() -> std::shared_ptr<AllocBuf> {
+    std::call_once(m_init_flag, [this]() mutable {
+      m_alloc_buf = std::move(std::make_unique<AllocBuf>());
+    });
+    return m_alloc_buf;
+  }
+
+  /**
    * @brief Points to a block of allocation buffer.
    * Being a shared pointer, this allows easy (but NOT trivial) copying. And,
    * it's kind of the only way we can satisfy the named requirement of
    * Allocator.
    */
-  std::shared_ptr<AllocBuf> m_alloc_buf{std::make_shared<AllocBuf>()};
-
-  static_assert(!std::is_trivially_copy_constructible_v<decltype(m_alloc_buf)>);
-  static_assert(!std::is_trivially_copy_assignable_v<decltype(m_alloc_buf)>);
-  static_assert(!std::is_trivially_move_constructible_v<decltype(m_alloc_buf)>);
-  static_assert(!std::is_trivially_move_assignable_v<decltype(m_alloc_buf)>);
+  std::shared_ptr<AllocBuf> m_alloc_buf{nullptr};
+  /**
+   * @brief We must wait for the buffer to be allocated.
+   */
+  std::once_flag m_init_flag;
 };
 
 /**
@@ -184,10 +208,11 @@ template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
 class PoolAlloc<T, NBlock, BuffInitAlloc>::AllocBuf {
 public:
   constexpr AllocBuf() noexcept(noexcept(BuffAllocType{}.allocate(NBlock)))
-      : m_buff(m_buff_alloc.allocate(NBlock), m_del) {
+      : m_buff(BuffAllocType{}.allocate(NBlock)) {
     AllocSlot* last_slot = nullptr;
     // std::views::zip hasn't landed in libstdc++
-    // for (std::tuple<AllocSlot&, std::add_lvalue_reference_t<T>> slot_block :
+    // for (std::tuple<AllocSlot&, std::add_lvalue_reference_t<T>> slot_block
+    // :
     //      std::views::zip(m_slot_list, *m_buff) | std::views::reverse) {
     //   auto& slot = std::get<0>(slot_block);
     //   slot.blk = &std::get<1>(slot_block);
@@ -196,22 +221,19 @@ public:
     //   last_slot = &slot;
     // }
 
-    // in case someone defines iterator to not be a pointer
-    auto buff_iter = &(*m_buff->end());
+    auto buff_iter = m_buff->end();
     for (auto& slot : m_slot_list | std::views::reverse) {
       slot.blk = --buff_iter;
       slot.next = last_slot;
       last_slot = &slot;
     }
-    m_head.store(m_slot_list.data(), std::memory_order::relaxed);
-
-    m_init_flag.test_and_set(std::memory_order::release);
+    m_head.store(m_slot_list.data(), std::memory_order::release);
   }
   AllocBuf(const AllocBuf&) = delete;
   AllocBuf(AllocBuf&&) = delete;
   auto operator=(const AllocBuf&) = delete;
   auto operator=(AllocBuf&&) = delete;
-  constexpr ~AllocBuf() = default;
+  constexpr ~AllocBuf() { BuffAllocType{}.deallocate(m_buff, NBlock); }
 
   /**
    * @copydoc tsds::PoolAlloc::allocate
@@ -223,52 +245,7 @@ public:
   void deallocate(pointer t_p_obj) noexcept;
 
 private:
-  /**
-   * @class BuffDeleter
-   * @brief Custom deleter for @ref m_buff
-   *
-   */
-  class BuffDeleter {
-  public:
-    explicit constexpr BuffDeleter(BuffAllocType& t_alloc) noexcept
-        : m_alloc{t_alloc} {}
-    BuffDeleter(const BuffDeleter&) = delete;
-    BuffDeleter(BuffDeleter&&) = delete;
-    auto operator=(const BuffDeleter&) = delete;
-    auto operator=(BuffDeleter&&) = delete;
-    ~BuffDeleter() = default;
-    constexpr void operator()(std::array<T, NBlock>* t_p_ptr) noexcept(
-        noexcept(m_alloc.deallocate(t_p_ptr, NBlock))) {
-      m_alloc.deallocate(t_p_ptr, NBlock);
-    }
-
-  private:
-    /**
-     * @brief Reference to @tsds::PoolAlloc::AllocBuf::BuffInitAlloc
-     *
-     * I know the naming is confusing.
-     */
-    BuffAllocType& m_alloc;
-  };
-  /**
-   * @brief Blocks all allocations until initialization is finished.
-   *
-   * We need to finish initializing the allocator before we use it.
-   * So, we acquire the lock as soon as initialization starts.
-   * That's why it needs to be placed as the first member.
-   *
-   * @ref allocate will need to check (but doesn't need to acquire) if the
-   * flag is true.
-   */
-  std::atomic_flag m_init_flag = ATOMIC_FLAG_INIT;
-  /**
-   * @brief One-time allocator used for allocating the buffer @ref m_buff.
-   */
-  BuffAllocType m_buff_alloc{};
-  /**
-   * @brief The deleter for the buffer @ref m_buff.
-   */
-  [[no_unique_address]] BuffDeleter m_del{m_buff_alloc};
+  auto get_head() -> AllocSlot* {}
   /**
    * @brief Holds instances @ref AllocSlot.
    *
@@ -279,14 +256,54 @@ private:
   /**
    * @brief The buffer.
    */
-  std::unique_ptr<std::array<T, NBlock>, BuffDeleter&>
-      m_buff; // NOLINT(*avoid-c-array*)
+  std::array<T, NBlock>* m_buff{nullptr};
   /**
    * @brief The head of the slot list. Doesn't necessarily have to be the
    * slot with the lowest/highest memory position.
    */
   std::atomic<AllocSlot*> m_head{};
 };
+
+template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
+  requires std::is_same_v<T, std::remove_reference_t<T>>
+constexpr PoolAlloc<T, NBlock, BuffInitAlloc>::PoolAlloc(
+    const PoolAlloc& t_other) noexcept
+    : m_alloc_buf(t_other.get_alloc_buf()) {
+  // if @ref m_alloc_buf is initialized, we know @ref m_alloc_buf of @a t_other
+  // has also been initialized. Hence, we don't need the check of @ref
+  // m_init_flag anymore.
+  std::call_once(m_init_flag, []() {});
+}
+
+template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
+  requires std::is_same_v<T, std::remove_reference_t<T>>
+constexpr PoolAlloc<T, NBlock, BuffInitAlloc>::PoolAlloc(
+    PoolAlloc&& t_other) noexcept
+    : m_alloc_buf{t_other.get_alloc_buf()} {
+  t_other.m_alloc_buf = nullptr;
+  std::call_once(m_init_flag, []() {});
+}
+
+template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
+  requires std::is_same_v<T, std::remove_reference_t<T>>
+constexpr auto PoolAlloc<T, NBlock, BuffInitAlloc>::operator=(
+    const PoolAlloc& t_other) noexcept -> PoolAlloc& {
+  if (this == &t_other) {
+    return *this;
+  }
+  m_alloc_buf = t_other.get_alloc_buf();
+  std::call_once(m_init_flag, []() {});
+}
+
+template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
+  requires std::is_same_v<T, std::remove_reference_t<T>>
+constexpr auto
+PoolAlloc<T, NBlock, BuffInitAlloc>::operator=(PoolAlloc&& t_other) noexcept
+    -> PoolAlloc& {
+  m_alloc_buf = t_other.get_alloc_buf();
+  t_other.m_alloc_buf = nullptr;
+  std::call_once(m_init_flag, []() {});
+}
 
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
@@ -309,7 +326,7 @@ PoolAlloc<T, NBlock, BuffInitAlloc>::allocate() noexcept -> pointer {
   if (std::is_constant_evaluated()) {
     return static_cast<pointer>(::operator new(sizeof(T)));
   }
-  return m_alloc_buf->allocate();
+  return get_alloc_buf()->allocate();
 }
 
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
@@ -327,11 +344,9 @@ template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
 [[nodiscard]] auto
 PoolAlloc<T, NBlock, BuffInitAlloc>::AllocBuf::allocate() noexcept -> pointer {
   // wait until initialization finishes.
-  // We don't need to get the "spinlock" here.
-  // Since notify_all on this flag is called with release,
+  // Since @c notify_all on this flag is called with release,
   // an acquire is to make sure that anything before the release
   // is, in fact, done.
-  while (!m_init_flag.test(std::memory_order::acquire)) {}
 
   auto curr_head = m_head.load(std::memory_order::relaxed);
   if (curr_head == nullptr) {
