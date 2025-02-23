@@ -124,17 +124,22 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a26d84464700fad6165762625749076ed" id="r_a26d84464700fad6165762625749076ed"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a26d84464700fad6165762625749076ed">PoolAlloc</a> () noexcept(noexcept(BuffAllocType{}.<a class="el" href="#abddb226ef49ec86ab59bb4dd2d4fa504">allocate</a>(NBlock)) &amp;&amp;noexcept(std::make_unique&lt; AllocBuf &gt;()))</td></tr>
+<tr class="separator:a26d84464700fad6165762625749076ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75692a73af11c699fcae5cfc69b4befc" id="r_a75692a73af11c699fcae5cfc69b4befc"><td class="memItemLeft" align="right" valign="top"><a id="a75692a73af11c699fcae5cfc69b4befc" name="a75692a73af11c699fcae5cfc69b4befc"></a>
 constexpr&#160;</td><td class="memItemRight" valign="bottom"><b>PoolAlloc</b> (const <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;) noexcept</td></tr>
+<tr class="memdesc:a75692a73af11c699fcae5cfc69b4befc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Increments the refcount to the buffer held by the copied <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a>. <br /></td></tr>
 <tr class="separator:a75692a73af11c699fcae5cfc69b4befc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9798b4c2f351f0bee40efa8a6436f29c" id="r_a9798b4c2f351f0bee40efa8a6436f29c"><td class="memItemLeft" align="right" valign="top"><a id="a9798b4c2f351f0bee40efa8a6436f29c" name="a9798b4c2f351f0bee40efa8a6436f29c"></a>
 constexpr&#160;</td><td class="memItemRight" valign="bottom"><b>PoolAlloc</b> (<a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;&amp;) noexcept</td></tr>
+<tr class="memdesc:a9798b4c2f351f0bee40efa8a6436f29c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <a class="el" href="#a75692a73af11c699fcae5cfc69b4befc">PoolAlloc(const PoolAlloc&amp;)</a>, but it doesn't bump the refcount. <br /></td></tr>
 <tr class="separator:a9798b4c2f351f0bee40efa8a6436f29c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2d7374f9337e77ae50cb9d56fc0924f0" id="r_a2d7374f9337e77ae50cb9d56fc0924f0"><td class="memItemLeft" align="right" valign="top"><a id="a2d7374f9337e77ae50cb9d56fc0924f0" name="a2d7374f9337e77ae50cb9d56fc0924f0"></a>
-constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;) noexcept -&gt; <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;</td></tr>
+<tr class="memitem:a2d7374f9337e77ae50cb9d56fc0924f0" id="r_a2d7374f9337e77ae50cb9d56fc0924f0"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2d7374f9337e77ae50cb9d56fc0924f0">operator=</a> (const <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;) noexcept -&gt; <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;</td></tr>
+<tr class="memdesc:a2d7374f9337e77ae50cb9d56fc0924f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Increments the refcount to the buffer held by the copied <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a>.     <br /></td></tr>
 <tr class="separator:a2d7374f9337e77ae50cb9d56fc0924f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5ebadb4a0a779de0444ca8e7203ad410" id="r_a5ebadb4a0a779de0444ca8e7203ad410"><td class="memItemLeft" align="right" valign="top"><a id="a5ebadb4a0a779de0444ca8e7203ad410" name="a5ebadb4a0a779de0444ca8e7203ad410"></a>
 constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;&amp;) noexcept -&gt; <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;</td></tr>
+<tr class="memdesc:a5ebadb4a0a779de0444ca8e7203ad410"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <a class="el" href="#a2d7374f9337e77ae50cb9d56fc0924f0">operator=(const PoolAlloc&amp;)</a>, but it doesn't bump the refcount. <br /></td></tr>
 <tr class="separator:a5ebadb4a0a779de0444ca8e7203ad410"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abddb226ef49ec86ab59bb4dd2d4fa504" id="r_abddb226ef49ec86ab59bb4dd2d4fa504"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abddb226ef49ec86ab59bb4dd2d4fa504">allocate</a> () noexcept -&gt; pointer</td></tr>
 <tr class="memdesc:abddb226ef49ec86ab59bb4dd2d4fa504"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates a block of size <code>sizeof(T)</code>.  <br /></td></tr>
@@ -200,7 +205,36 @@ This class holds a <code>shared_ptr</code> (whose constructor is, currently, the
 <dl class="section note"><dt>Note</dt><dd>In <code>constexpr</code> context, all allocations fall back to <code>::operator new</code> </dd></dl>
 <p>Manages a buffer allocated by <em>BuffInitAlloc</em>.</p>
 <p>As for why that's the case: this allocator only allows you to get one chunk of memory of size <code>sizeof(T)</code> each time. The named requirement for <em>Allocator</em> requires <code>allocate</code> to be able to take in an extra parameter <code>n</code>, and return a pointer to <code>T</code>[n]. This allocator simply doesn't do that. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a26d84464700fad6165762625749076ed" name="a26d84464700fad6165762625749076ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26d84464700fad6165762625749076ed">&#9670;&#160;</a></span>PoolAlloc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class T, std::size_t NBlock, template&lt; typename &gt; class BuffInitAlloc = std::allocator&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classtsds_1_1PoolAlloc.html">tsds::PoolAlloc</a>&lt; T, NBlock, BuffInitAlloc &gt;::PoolAlloc </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section note"><dt>Note</dt><dd>Not really <code>noexcept</code> since the default <code>std::make_unique</code> can throw. So, unless you overwrite the global <code>::operator new</code>, this can throw. </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a id="abddb226ef49ec86ab59bb4dd2d4fa504" name="abddb226ef49ec86ab59bb4dd2d4fa504"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abddb226ef49ec86ab59bb4dd2d4fa504">&#9670;&#160;</a></span>allocate()</h2>
 
@@ -335,6 +369,36 @@ requires std::is_same_v&lt;T, std::remove_reference_t&lt;T&gt;&gt;</div>
 
 <p>Basically the opposite of <a class="el" href="#a2c02738a4b9c85e4c00c303a9c37ea20">operator==</a>. </p>
 <dl class="section return"><dt>Returns</dt><dd>The opposite of <a class="el" href="#a2c02738a4b9c85e4c00c303a9c37ea20">operator==</a> </dd></dl>
+
+</div>
+</div>
+<a id="a2d7374f9337e77ae50cb9d56fc0924f0" name="a2d7374f9337e77ae50cb9d56fc0924f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d7374f9337e77ae50cb9d56fc0924f0">&#9670;&#160;</a></span>operator=()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class T, std::size_t NBlock, template&lt; typename &gt; class BuffInitAlloc&gt; <br />
+requires std::is_same_v&lt;T, std::remove_reference_t&lt;T&gt;&gt;</div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto <a class="el" href="classtsds_1_1PoolAlloc.html">tsds::PoolAlloc</a>&lt; T, NBlock, BuffInitAlloc &gt;::operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a>&lt; T, NBlock, BuffInitAlloc &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>t_other</em></span></td><td>)</td>
+          <td> -&gt; <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a>&amp;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Increments the refcount to the buffer held by the copied <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a>.    </p>
 
 </div>
 </div>
