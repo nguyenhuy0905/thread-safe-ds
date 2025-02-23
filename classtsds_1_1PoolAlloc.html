@@ -124,6 +124,18 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a75692a73af11c699fcae5cfc69b4befc" id="r_a75692a73af11c699fcae5cfc69b4befc"><td class="memItemLeft" align="right" valign="top"><a id="a75692a73af11c699fcae5cfc69b4befc" name="a75692a73af11c699fcae5cfc69b4befc"></a>
+constexpr&#160;</td><td class="memItemRight" valign="bottom"><b>PoolAlloc</b> (const <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;) noexcept</td></tr>
+<tr class="separator:a75692a73af11c699fcae5cfc69b4befc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9798b4c2f351f0bee40efa8a6436f29c" id="r_a9798b4c2f351f0bee40efa8a6436f29c"><td class="memItemLeft" align="right" valign="top"><a id="a9798b4c2f351f0bee40efa8a6436f29c" name="a9798b4c2f351f0bee40efa8a6436f29c"></a>
+constexpr&#160;</td><td class="memItemRight" valign="bottom"><b>PoolAlloc</b> (<a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;&amp;) noexcept</td></tr>
+<tr class="separator:a9798b4c2f351f0bee40efa8a6436f29c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d7374f9337e77ae50cb9d56fc0924f0" id="r_a2d7374f9337e77ae50cb9d56fc0924f0"><td class="memItemLeft" align="right" valign="top"><a id="a2d7374f9337e77ae50cb9d56fc0924f0" name="a2d7374f9337e77ae50cb9d56fc0924f0"></a>
+constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;) noexcept -&gt; <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;</td></tr>
+<tr class="separator:a2d7374f9337e77ae50cb9d56fc0924f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ebadb4a0a779de0444ca8e7203ad410" id="r_a5ebadb4a0a779de0444ca8e7203ad410"><td class="memItemLeft" align="right" valign="top"><a id="a5ebadb4a0a779de0444ca8e7203ad410" name="a5ebadb4a0a779de0444ca8e7203ad410"></a>
+constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;&amp;) noexcept -&gt; <a class="el" href="classtsds_1_1PoolAlloc.html">PoolAlloc</a> &amp;</td></tr>
+<tr class="separator:a5ebadb4a0a779de0444ca8e7203ad410"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abddb226ef49ec86ab59bb4dd2d4fa504" id="r_abddb226ef49ec86ab59bb4dd2d4fa504"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abddb226ef49ec86ab59bb4dd2d4fa504">allocate</a> () noexcept -&gt; pointer</td></tr>
 <tr class="memdesc:abddb226ef49ec86ab59bb4dd2d4fa504"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates a block of size <code>sizeof(T)</code>.  <br /></td></tr>
 <tr class="separator:abddb226ef49ec86ab59bb4dd2d4fa504"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -180,9 +192,12 @@ class tsds::PoolAlloc&lt; T, NBlock, BuffInitAlloc &gt;</div><p>A fix-sized pool
   </table>
   </dd>
 </dl>
-<dl class="section important"><dt>Important</dt><dd>This class does NOT satisfies the named requirement <a href="https://en.cppreference.com/w/cpp/named_req/Allocator">Allocator</a>. </dd></dl>
+<dl class="section important"><dt>Important</dt><dd>This class does NOT satisfies the named requirement <a href="https://en.cppreference.com/w/cpp/named_req/Allocator">Allocator</a>. </dd>
+<dd>
+At the moment of writing, <code>shared_ptr</code> is <b>not</b> <code>constexpr</code>. So, as much as we hate it, this allocator is not <code>constexpr</code>. </dd>
+<dd>
+This class holds a <code>shared_ptr</code> (whose constructor is, currently, the default allocator) to the allocation buffer. </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>In <code>constexpr</code> context, all allocations fall back to <code>::operator new</code> </dd></dl>
-<dl class="section important"><dt>Important</dt><dd>At the moment of writing, <code>shared_ptr</code> is <b>not</b> <code>constexpr</code>. So, as much as we hate it, this allocator is not <code>constexpr</code>.</dd></dl>
 <p>Manages a buffer allocated by <em>BuffInitAlloc</em>.</p>
 <p>As for why that's the case: this allocator only allows you to get one chunk of memory of size <code>sizeof(T)</code> each time. The named requirement for <em>Allocator</em> requires <code>allocate</code> to be able to take in an extra parameter <code>n</code>, and return a pointer to <code>T</code>[n]. This allocator simply doesn't do that. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
