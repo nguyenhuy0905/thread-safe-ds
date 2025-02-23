@@ -32,13 +32,6 @@
         }
     },
     {
-        "name": "conan",
-        "hidden": true,
-        "cacheVariables": {
-            "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/conan/conan_toolchain.cmake"
-        }
-    },
-    {
         "name": "test",
         "hidden": true,
         "cacheVariables": {
@@ -76,7 +69,10 @@
     },
     {
         "name": "dev-conan",
-        "inherits": ["dev", "conan"]
+        "inherits": ["dev"],
+        "cacheVariables": {
+          "CMAKE_TOOLCHAIN_FILE": "build/Debug/generators/conan_toolchain.cmake"
+        }
     },
     {
         "name": "dev-ci",
@@ -96,7 +92,10 @@
     },
     {
         "name": "release-conan",
-        "inherits": ["release", "conan"]
+        "inherits": ["release"],
+        "cacheVariables": {
+          "CMAKE_TOOLCHAIN_FILE": "build/RelWithDebInfo/generators/conan_toolchain.cmake"
+        }
     },
     {
         "name": "release-ci",
