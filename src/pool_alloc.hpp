@@ -206,7 +206,6 @@ public:
     m_head.store(m_slot_list.data(), std::memory_order::relaxed);
 
     m_init_flag.test_and_set(std::memory_order::release);
-    m_init_flag.notify_all();
   }
   AllocBuf(const AllocBuf&) = delete;
   AllocBuf(AllocBuf&&) = delete;
@@ -261,7 +260,7 @@ private:
    * @ref allocate will need to check (but doesn't need to acquire) if the
    * flag is true.
    */
-  std::atomic_flag m_init_flag{}; // NOLINT(*redundant-member-init*)
+  std::atomic_flag m_init_flag = ATOMIC_FLAG_INIT;
   /**
    * @brief One-time allocator used for allocating the buffer @ref m_buff.
    */
@@ -332,9 +331,7 @@ PoolAlloc<T, NBlock, BuffInitAlloc>::AllocBuf::allocate() noexcept -> pointer {
   // Since notify_all on this flag is called with release,
   // an acquire is to make sure that anything before the release
   // is, in fact, done.
-  if (!m_init_flag.test(std::memory_order::acquire)) {
-    m_init_flag.wait(false, std::memory_order::relaxed);
-  }
+  while (!m_init_flag.test(std::memory_order::acquire)) {}
 
   auto curr_head = m_head.load(std::memory_order::relaxed);
   if (curr_head == nullptr) {
