@@ -241,7 +241,7 @@ $(function(){initNavTree('pool__alloc_8hpp_source.html',''); initResizable(true)
 <div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>  <span class="keyword">private</span>:</div>
 <div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>    BuffAllocType&amp; m_alloc;</div>
 <div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>  };</div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>  std::atomic_flag m_init_flag = ATOMIC_FLAG_INIT;</div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>  std::atomic_flag m_init_flag{}; <span class="comment">// NOLINT(*redundant-member-init*)</span></div>
 <div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>  BuffAllocType m_buff_alloc{};</div>
 <div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>  [[no_unique_address]] BuffDeleter m_del{m_buff_alloc};</div>
 <div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>  std::array&lt;AllocSlot, NBlock&gt; m_slot_list{};</div>
@@ -298,43 +298,46 @@ $(function(){initNavTree('pool__alloc_8hpp_source.html',''); initResizable(true)
 <div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>PoolAlloc&lt;T, NBlock, BuffInitAlloc&gt;::AllocBuf::allocate() noexcept -&gt; pointer {</div>
 <div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>  <span class="comment">// wait until initialization finishes.</span></div>
 <div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>  <span class="comment">// We don&#39;t need to get the &quot;spinlock&quot; here.</span></div>
-<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>  <span class="keywordflow">if</span> (!m_init_flag.test()) {</div>
-<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>    m_init_flag.wait(<span class="keyword">false</span>, std::memory_order::relaxed);</div>
-<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>  }</div>
-<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span> </div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>  <span class="keyword">auto</span> curr_head = m_head.load(std::memory_order::relaxed);</div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>  <span class="keywordflow">if</span> (curr_head == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>    <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>  }</div>
-<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>  <span class="comment">// gain an exclusive block.</span></div>
-<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>  <span class="keywordflow">while</span> (!m_head.compare_exchange_weak(curr_head, curr_head-&gt;next,</div>
-<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>                                       std::memory_order::acquire,</div>
-<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>                                       std::memory_order::relaxed)) {</div>
-<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>    <span class="comment">// no more memory in this allocator.</span></div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>    <span class="keywordflow">if</span> (curr_head == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>      <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>    }</div>
-<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>  }</div>
-<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>  <span class="comment">// now curr_head is an exclusive block.</span></div>
-<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>  <span class="keywordflow">return</span> curr_head-&gt;blk;</div>
-<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>}</div>
-<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span> </div>
-<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T, std::<span class="keywordtype">size_t</span> NBlock, <span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">class </span>BuffInitAlloc&gt;</div>
-<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span>  <span class="keyword">requires</span> std::is_same_v&lt;T, std::remove_reference_t&lt;T&gt;&gt;</div>
-<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span><span class="keywordtype">void</span> PoolAlloc&lt;T, NBlock, BuffInitAlloc&gt;::AllocBuf::deallocate(</div>
-<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>    pointer t_p_obj) <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>  <span class="keyword">auto</span> t_idx = <span class="keyword">static_cast&lt;</span>size_type<span class="keyword">&gt;</span>(t_p_obj - m_buff-&gt;data());</div>
-<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span>  <span class="keyword">auto</span>* slot = &amp;m_slot_list.at(t_idx);</div>
-<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span>  <span class="keyword">auto</span> curr_head = m_head.load(std::memory_order::relaxed);</div>
-<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>  <span class="keywordflow">while</span> (!m_head.compare_exchange_weak(curr_head, slot,</div>
-<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>                                       std::memory_order::release,</div>
-<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>                                       std::memory_order::relaxed)) {</div>
-<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>  }</div>
-<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>  slot-&gt;next.store(curr_head, std::memory_order::release);</div>
-<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>}</div>
-<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>}</div>
-<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span> </div>
-<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span><span class="preprocessor">#endif </span><span class="comment">// !TSDS_POOL_ALLOC_HPP</span></div>
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>  <span class="comment">// Since notify_all on this flag is called with release,</span></div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>  <span class="comment">// an acquire is to make sure that anything before the release</span></div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>  <span class="comment">// is, in fact, done.</span></div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>  <span class="keywordflow">if</span> (!m_init_flag.test(std::memory_order::acquire)) {</div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>    m_init_flag.wait(<span class="keyword">false</span>, std::memory_order::relaxed);</div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>  }</div>
+<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span> </div>
+<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>  <span class="keyword">auto</span> curr_head = m_head.load(std::memory_order::relaxed);</div>
+<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>  <span class="keywordflow">if</span> (curr_head == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>    <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>  }</div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>  <span class="comment">// gain an exclusive block.</span></div>
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>  <span class="keywordflow">while</span> (!m_head.compare_exchange_weak(curr_head, curr_head-&gt;next,</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>                                       std::memory_order::acquire,</div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>                                       std::memory_order::relaxed)) {</div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>    <span class="comment">// no more memory in this allocator.</span></div>
+<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>    <span class="keywordflow">if</span> (curr_head == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>      <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>    }</div>
+<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>  }</div>
+<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span>  <span class="comment">// now curr_head is an exclusive block.</span></div>
+<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>  <span class="keywordflow">return</span> curr_head-&gt;blk;</div>
+<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span>}</div>
+<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span> </div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T, std::<span class="keywordtype">size_t</span> NBlock, <span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">class </span>BuffInitAlloc&gt;</div>
+<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>  <span class="keyword">requires</span> std::is_same_v&lt;T, std::remove_reference_t&lt;T&gt;&gt;</div>
+<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span><span class="keywordtype">void</span> PoolAlloc&lt;T, NBlock, BuffInitAlloc&gt;::AllocBuf::deallocate(</div>
+<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span>    pointer t_p_obj) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>  <span class="keyword">auto</span> t_idx = <span class="keyword">static_cast&lt;</span>size_type<span class="keyword">&gt;</span>(t_p_obj - m_buff-&gt;data());</div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>  <span class="keyword">auto</span>* slot = &amp;m_slot_list.at(t_idx);</div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>  <span class="keyword">auto</span> curr_head = m_head.load(std::memory_order::relaxed);</div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>  <span class="keywordflow">while</span> (!m_head.compare_exchange_weak(curr_head, slot,</div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>                                       std::memory_order::release,</div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>                                       std::memory_order::relaxed)) {</div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>  }</div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>  slot-&gt;next.store(curr_head, std::memory_order::release);</div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>}</div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>}</div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span> </div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span><span class="preprocessor">#endif </span><span class="comment">// !TSDS_POOL_ALLOC_HPP</span></div>
 <div class="ttc" id="aclasstsds_1_1PoolAlloc_html"><div class="ttname"><a href="classtsds_1_1PoolAlloc.html">tsds::PoolAlloc</a></div><div class="ttdoc">A fix-sized pool allocator.</div><div class="ttdef"><b>Definition</b> pool_alloc.hpp:51</div></div>
 <div class="ttc" id="aclasstsds_1_1PoolAlloc_html_a2c02738a4b9c85e4c00c303a9c37ea20"><div class="ttname"><a href="classtsds_1_1PoolAlloc.html#a2c02738a4b9c85e4c00c303a9c37ea20">tsds::PoolAlloc::operator==</a></div><div class="ttdeci">constexpr auto operator==(const PoolAlloc &amp;t_other) const noexcept -&gt; bool</div><div class="ttdoc">Compares this pool allocator to t_other.</div><div class="ttdef"><b>Definition</b> pool_alloc.hpp:294</div></div>
 <div class="ttc" id="aclasstsds_1_1PoolAlloc_html_a793279c7c0f0db2b3985d9a504d5aba3"><div class="ttname"><a href="classtsds_1_1PoolAlloc.html#a793279c7c0f0db2b3985d9a504d5aba3">tsds::PoolAlloc&lt; Other, NBlock &gt;::max_size</a></div><div class="ttdeci">constexpr auto max_size() const noexcept -&gt; size_type</div></div>
