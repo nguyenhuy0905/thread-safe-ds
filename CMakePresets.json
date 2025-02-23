@@ -100,7 +100,7 @@
     },
     {
         "name": "release-ci",
-        "inherits": ["release-conan"],
+        "inherits": ["release-conan", "test"],
         "cacheVariables": {
           "tsds_DOCS": "OFF",
           "tsds_COV": "OFF"

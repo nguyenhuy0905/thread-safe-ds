@@ -261,7 +261,7 @@ private:
    * @ref allocate will need to check (but doesn't need to acquire) if the
    * flag is true.
    */
-  std::atomic_flag m_init_flag = ATOMIC_FLAG_INIT;
+  std::atomic_flag m_init_flag{}; // NOLINT(*redundant-member-init*)
   /**
    * @brief One-time allocator used for allocating the buffer @ref m_buff.
    */
@@ -329,7 +329,10 @@ template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
 PoolAlloc<T, NBlock, BuffInitAlloc>::AllocBuf::allocate() noexcept -> pointer {
   // wait until initialization finishes.
   // We don't need to get the "spinlock" here.
-  if (!m_init_flag.test()) {
+  // Since notify_all on this flag is called with release,
+  // an acquire is to make sure that anything before the release
+  // is, in fact, done.
+  if (!m_init_flag.test(std::memory_order::acquire)) {
     m_init_flag.wait(false, std::memory_order::relaxed);
   }
 
