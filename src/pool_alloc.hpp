@@ -53,15 +53,35 @@ template <class T, std::size_t NBlock,
   requires std::is_same_v<T, std::remove_reference_t<T>>
 class PoolAlloc {
 public:
+  /**
+   * @note Not really @c noexcept since the default @c std::make_unique can
+   * throw. So, unless you overwrite the global @c ::operator new, this can
+   * throw.
+   */
   constexpr PoolAlloc() noexcept(noexcept(BuffAllocType{}.allocate(NBlock)) &&
                                  noexcept(std::make_unique<AllocBuf>())) {
     get_alloc_buf();
   }
+  /**
+   * @brief Increments the refcount to the buffer held by the copied @ref
+   * PoolAlloc.
+   */
   constexpr PoolAlloc(const PoolAlloc&) noexcept; // NOLINT(*named-parameter*)
-  constexpr PoolAlloc(PoolAlloc&&) noexcept;      // NOLINT(*named-parameter*)
+  /**
+   * @brief Same as @ref PoolAlloc(const PoolAlloc&), but it doesn't bump the
+   * refcount.
+   */
+  constexpr PoolAlloc(PoolAlloc&&) noexcept; // NOLINT(*named-parameter*)
+  /**
+   * @copydoc PoolAlloc(const PoolAlloc&)
+   */
   constexpr auto
   operator=(const PoolAlloc&) noexcept // NOLINT(*named-parameter*)
       -> PoolAlloc&;
+  /**
+   * @brief Same as @ref operator=(const PoolAlloc&), but it doesn't bump the
+   * refcount.
+   */
   constexpr auto operator=(PoolAlloc&&) noexcept // NOLINT(*named-parameter*)
       -> PoolAlloc&;
   ~PoolAlloc() = default;
@@ -180,12 +200,16 @@ private:
    * any call to @ref allocate can take place.
    * @important Only @c constexpr if @c shared_ptr has @c constexpr move.
    */
-  constexpr auto get_alloc_buf() -> std::shared_ptr<AllocBuf> {
+  constexpr auto get_alloc_buf() const -> std::shared_ptr<AllocBuf> {
     std::call_once(m_init_flag, [this]() mutable {
       m_alloc_buf = std::move(std::make_unique<AllocBuf>());
     });
     return m_alloc_buf;
   }
+
+  // both of these, while marked mutable, needs only be mutable during
+  // the initialization. After initialization, they can and should be used like
+  // const
 
   /**
    * @brief Points to a block of allocation buffer.
@@ -193,11 +217,11 @@ private:
    * it's kind of the only way we can satisfy the named requirement of
    * Allocator.
    */
-  std::shared_ptr<AllocBuf> m_alloc_buf{nullptr};
+  mutable std::shared_ptr<AllocBuf> m_alloc_buf{nullptr};
   /**
    * @brief We must wait for the buffer to be allocated.
    */
-  std::once_flag m_init_flag;
+  mutable std::once_flag m_init_flag;
 };
 
 /**

@@ -23,7 +23,7 @@ TEST_CASE("Hopefully it compiles") {
   // dynamically (say, with a vector)
   std::array<std::thread, 32> test_threads{}; // NOLINT(*magic-number*)
   for (uint16_t i = 0; i < 32; ++i) {         // NOLINT(*magic-number*)
-    test_threads.at(i) = std::thread{[&test]() mutable {
+    test_threads.at(i) = std::thread{[=]() mutable {
       std::array<int*, 32> ptr_vec{};    // NOLINT(*magic-number*)
       for (uint8_t j = 0; j < 32; ++j) { // NOLINT(*magic-number*)
         auto* ptr = test.allocate();
