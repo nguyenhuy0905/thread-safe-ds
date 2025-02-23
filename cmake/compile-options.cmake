@@ -39,6 +39,7 @@ cmake_dependent_option(tsds_ASAN "Whether to link with AddressSanitizer" ON
   "PROJECT_IS_TOP_LEVEL;
   NOT tsds_MSAN;
   NOT tsds_TSAN;
+  NOT CMAKE_CXX_COMPILER_ID STREQUAL MSVC;
   tsds_DEV" OFF)
 set(sanitizer_list "")
 if(tsds_ASAN)
@@ -94,14 +95,6 @@ if(tsds_ASAN OR tsds_MSAN OR tsds_TSAN OR tsds_UBSAN)
     )
     target_link_options(tsds_compile_options
         INTERFACE "-fsanitize=${sanitizer_opts}")
-  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # MSVC can't really use anything else anyways.
-    target_compile_options(tsds_compile_options
-      INTERFACE
-      "/fsanitize=address"
-    )
-    target_link_options(tsds_compile_options
-        INTERFACE "/fsanitize=address")
   endif()
 endif()
 

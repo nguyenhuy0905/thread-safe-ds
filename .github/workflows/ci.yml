@@ -101,13 +101,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install CMake and graphviz
         run: |
           sudo apt-get update
-          sudo apt-get install cmake doxygen graphviz -y
+          sudo apt-get install cmake graphviz -y
+
+      - name: Install Doxygen
+        run: |
+          sudo apt-get install wget -y
+          wget 'https://www.doxygen.nl/files/doxygen-1.13.2.linux.bin.tar.gz'
+          tar -xvf doxygen-1.13.2.linux.bin.tar.gz
 
       - name: Configure CMake
-        run: cmake --preset docs
+        run: cmake -D CMAKE_PROGRAM_PATH:STRING=./doxygen-1.13.2/bin --preset docs
 
       - name: Build docs
         run: cmake --build build --target docs
