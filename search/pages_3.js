@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['safe_20data_20structures_0',['tsds - Thread-safe data structures',['../index.html',1,'']]],
-  ['structures_1',['tsds - Thread-safe data structures',['../index.html',1,'']]]
+  ['reference_20page_0',['Reference page',['../library_reference.html',1,'index']]]
 ];
