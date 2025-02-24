@@ -36,7 +36,9 @@ TEST_CASE("Hopefully it compiles") {
         ptr_vec.at(j) = ptr;
       }
       // If nothing goes wrong, commenting this out should still pass all the
-      // tests
+      // tests.
+      // Try to test what happens if no deallocate called also. Technically,
+      // nothing should go wrong.
       for (uint8_t j = 0; j < 32; ++j) { // NOLINT(*magic-number*)
         REQUIRE(*ptr_vec.at(j) == j);
         test.deallocate(ptr_vec.at(j));

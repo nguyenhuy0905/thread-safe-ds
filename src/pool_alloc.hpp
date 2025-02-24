@@ -31,22 +31,26 @@ namespace tsds {
  * @tparam T The type to alloc.
  * @tparam NBlock The maximum number of T that can be held.
  * @tparam BuffInitAlloc The allocator used to allocate the buffer. Only used
- * once.
+ * twice, one by calling @c allocate(1) and one by calling
+ * @c deallocate(buf_ptr, 1). Must be copy and move constructible/assignable as
+ * per Allocator named requirement. Doesn't need to satisfy any other condition
+ * in the named requirement.
  * @important This class does NOT satisfies the named requirement
  * [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator).
  * @important At the moment of writing, @c shared_ptr is @b not @c constexpr.
  * So, as much as we hate it, this allocator is not @c constexpr.
- * @important This class holds a @c shared_ptr (whose constructor is, currently,
- * the default allocator) to the allocation buffer.
  * @note In @c constexpr context, all allocations fall back to @c ::operator new
+ * @todo Implement @c construct and @c destruct.
  *
  * Manages a buffer allocated by @e BuffInitAlloc.
  *
- * As for why that's the case: this allocator only allows you to get
- * one chunk of memory of size @c sizeof(T) each time. The named
- * requirement for @e Allocator requires @c allocate to be able to
- * take in an extra parameter @c n, and return a pointer to @c T[n].
- * This allocator simply doesn't do that.
+ * As for why that's the case: this allocator only allows you to get one chunk
+ * of memory of size @c sizeof(T) each time. The named requirement for @a
+ * Allocator requires @c allocate to be able to take in an extra parameter @c n,
+ * and return a pointer to @c T[n]. This allocator simply doesn't do that.
+ *
+ * If you're sure a container will only request, one at a time, a block of the
+ * same size, you can use it like, say, @c std::allocator.
  */
 template <class T, std::size_t NBlock,
           template <typename> class BuffInitAlloc = std::allocator>
@@ -54,20 +58,20 @@ template <class T, std::size_t NBlock,
 class PoolAlloc {
 public:
   /**
-   * @note Not really @c noexcept since the default @c std::make_unique can
-   * throw. So, unless you overwrite the global @c ::operator new, this can
-   * throw.
+   * @name Special Member Functions
+   * @brief Constructs a @ref PoolAlloc.
    */
-  constexpr PoolAlloc() noexcept(noexcept(BuffAllocType{}.allocate(NBlock)) &&
-                                 noexcept(std::make_unique<AllocBuf>())) {
+  constexpr PoolAlloc() noexcept(noexcept(BuffAllocType{}.allocate(1))) {
     get_alloc_buf();
   }
   /**
+   * @name Special Member Functions
    * @brief Increments the refcount to the buffer held by the copied @ref
    * PoolAlloc.
    */
   constexpr PoolAlloc(const PoolAlloc&) noexcept; // NOLINT(*named-parameter*)
   /**
+   * @name Special Member Functions
    * @brief Same as @ref PoolAlloc(const PoolAlloc&), but it doesn't bump the
    * refcount.
    */
@@ -79,11 +83,15 @@ public:
   operator=(const PoolAlloc&) noexcept // NOLINT(*named-parameter*)
       -> PoolAlloc&;
   /**
+   * @name Special Member Functions
    * @brief Same as @ref operator=(const PoolAlloc&), but it doesn't bump the
    * refcount.
    */
   constexpr auto operator=(PoolAlloc&&) noexcept // NOLINT(*named-parameter*)
       -> PoolAlloc&;
+  /**
+   * @name Special Member Functions
+   */
   ~PoolAlloc() = default;
   // NOLINTBEGIN(*identifier-naming*)
   /**
@@ -116,9 +124,11 @@ public:
    * @important At the moment of writing, @c shared_ptr is @b not @c constexpr.
    * So, as much as we hate it, this allocator is not @c constexpr.
    *
+   * Takes one parameter of type @c std::size_t, but is ignored. Only there to
+   * meet Allocator named requirement somewhat.
    * In @c constexpr context, simply fall back to @c ::operator new
    */
-  constexpr auto allocate() noexcept -> pointer;
+  constexpr auto allocate(std::size_t /*unused*/ = 0) noexcept -> pointer;
 
   /**
    * @brief Releases the memory held by @a t_p_obj back.
@@ -135,8 +145,15 @@ public:
    * this is the behavior that smart pointers support.
    * @important At the moment of writing, @c shared_ptr is @b not @c constexpr.
    * So, as much as we hate it, this allocator is not @c constexpr.
+   *
+   * Behavior is undefined if the @a t_p_obj passed in doesn't come from calling
+   * @ref allocate on an instance of @ref PoolAlloc that is not equal to @c this
+   * instance.
+   * Takes one parameter of type @c std::size_t, but is ignored. Only there to
+   * meet Allocator named requirement somewhat.
    */
-  constexpr void deallocate(pointer t_p_obj) noexcept;
+  constexpr void deallocate(pointer t_p_obj,
+                            std::size_t /*unused*/ = 0) noexcept;
   /**
    * @brief Just returns @a NBlock
    * @return NBlock.
@@ -163,7 +180,6 @@ public:
   operator!=(const PoolAlloc& t_other) const noexcept -> bool;
 
 private:
-  using BuffAllocType = BuffInitAlloc<std::array<T, NBlock>>;
   /**
    * @class AllocSlot
    * @brief Linked list node, each holding a pointer to a block of size
@@ -194,6 +210,26 @@ private:
    * @see tsds::PoolAlloc::AllocSlot
    */
   class AllocBuf;
+  using BuffAllocType = BuffInitAlloc<AllocBuf>;
+  /**
+   * @class AllocWrapper
+   * @brief A very simple wrapper around a @a BuffInitAlloc.
+   *
+   * Provides 2 functionalities, both only called once per @ref AllocBuf
+   * allocated. First is @ref tsds::PoolAlloc::AllocWrapper::allocate,
+   * then the call operator, @ref tsds::PoolAlloc::AllocWrapper::operator(),
+   * which deallocates the memory previously allocated.
+   * Technically, there's another: control the lifetime of the allocator.
+   * This wrapper also owns an instance of the allocator.
+   */
+  class AllocWrapper {
+  public:
+    auto allocate() -> AllocBuf* { return m_alloc.allocate(1); }
+    void operator()(AllocBuf* t_p_ptr) { m_alloc.deallocate(t_p_ptr, 1); }
+
+  private:
+    BuffAllocType m_alloc;
+  };
 
   /**
    * @brief Ensure that @ref m_alloc_buf has been fully initialized before
@@ -202,12 +238,15 @@ private:
    */
   constexpr auto get_alloc_buf() const -> std::shared_ptr<AllocBuf> {
     std::call_once(m_init_flag, [this]() mutable {
-      m_alloc_buf = std::move(std::make_unique<AllocBuf>());
+      m_alloc = AllocWrapper{};
+      auto* buf = m_alloc.allocate();
+      m_alloc_buf = std::move(std::unique_ptr<AllocBuf, AllocWrapper&>(
+          new (buf) AllocBuf, m_alloc));
     });
     return m_alloc_buf;
   }
 
-  // both of these, while marked mutable, needs only be mutable during
+  // all of these, while marked mutable, needs only be mutable during
   // the initialization. After initialization, they can and should be used like
   // const
 
@@ -218,6 +257,7 @@ private:
    * Allocator.
    */
   mutable std::shared_ptr<AllocBuf> m_alloc_buf{nullptr};
+  mutable AllocWrapper m_alloc;
   /**
    * @brief We must wait for the buffer to be allocated.
    */
@@ -231,8 +271,7 @@ template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
 class PoolAlloc<T, NBlock, BuffInitAlloc>::AllocBuf {
 public:
-  constexpr AllocBuf() noexcept(noexcept(BuffAllocType{}.allocate(NBlock)))
-      : m_buff(BuffAllocType{}.allocate(NBlock)) {
+  constexpr AllocBuf() noexcept {
     AllocSlot* last_slot = nullptr;
     // std::views::zip hasn't landed in libstdc++
     // for (std::tuple<AllocSlot&, std::add_lvalue_reference_t<T>> slot_block
@@ -247,7 +286,10 @@ public:
 
     // MSVC doesn't allow direct conversion from iterator to pointer.
     // In gcc/clang, an iterator seems to be just an alias to a pointer.
-    auto buff_iter = &m_buff->back();
+    auto buff_iter =
+        // the minus behind m_buff.back() is to accomodate memory alignment.
+        reinterpret_cast<pointer>( // NOLINT(*reinterpret-cast*)
+            &m_buff.back() - (sizeof(T) - 1));
     for (auto& slot : m_slot_list | std::views::reverse) {
       slot.blk = buff_iter--;
       slot.next = last_slot;
@@ -259,7 +301,7 @@ public:
   AllocBuf(AllocBuf&&) = delete;
   auto operator=(const AllocBuf&) = delete;
   auto operator=(AllocBuf&&) = delete;
-  constexpr ~AllocBuf() { BuffAllocType{}.deallocate(m_buff, NBlock); }
+  constexpr ~AllocBuf() = default;
 
   /**
    * @copydoc tsds::PoolAlloc::allocate
@@ -271,7 +313,10 @@ public:
   void deallocate(pointer t_p_obj) noexcept;
 
 private:
-  auto get_head() -> AllocSlot* {}
+  /**
+   * @brief The buffer.
+   */
+  std::array<uint8_t, sizeof(T) * NBlock> m_buff{};
   /**
    * @brief Holds instances @ref AllocSlot.
    *
@@ -279,10 +324,6 @@ private:
    * data.
    */
   std::array<AllocSlot, NBlock> m_slot_list{};
-  /**
-   * @brief The buffer.
-   */
-  std::array<T, NBlock>* m_buff{nullptr};
   /**
    * @brief The head of the slot list. Doesn't necessarily have to be the
    * slot with the lowest/highest memory position.
@@ -348,7 +389,8 @@ template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
 [[nodiscard]] constexpr auto
-PoolAlloc<T, NBlock, BuffInitAlloc>::allocate() noexcept -> pointer {
+PoolAlloc<T, NBlock, BuffInitAlloc>::allocate(std::size_t /*unused*/) noexcept
+    -> pointer {
   if (std::is_constant_evaluated()) {
     return static_cast<pointer>(::operator new(sizeof(T)));
   }
@@ -357,8 +399,8 @@ PoolAlloc<T, NBlock, BuffInitAlloc>::allocate() noexcept -> pointer {
 
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-constexpr void
-PoolAlloc<T, NBlock, BuffInitAlloc>::deallocate(pointer t_p_obj) noexcept {
+constexpr void PoolAlloc<T, NBlock, BuffInitAlloc>::deallocate(
+    pointer t_p_obj, std::size_t /*unused*/) noexcept {
   if (std::is_constant_evaluated()) {
     return ::operator delete(t_p_obj);
   }
@@ -395,7 +437,9 @@ template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
 void PoolAlloc<T, NBlock, BuffInitAlloc>::AllocBuf::deallocate(
     pointer t_p_obj) noexcept {
-  auto t_idx = static_cast<size_type>(t_p_obj - m_buff->data());
+  auto t_idx = static_cast<size_type>(
+      t_p_obj -
+      reinterpret_cast<pointer>(m_buff.data())); // NOLINT(*reinterpret-cast)
   auto* slot = &m_slot_list.at(t_idx);
   auto curr_head = m_head.load(std::memory_order::relaxed);
   while (!m_head.compare_exchange_weak(curr_head, slot,
