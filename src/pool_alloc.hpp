@@ -247,9 +247,9 @@ public:
 
     // MSVC doesn't allow direct conversion from iterator to pointer.
     // In gcc/clang, an iterator seems to be just an alias to a pointer.
-    auto buff_iter = &(*m_buff->end());
+    auto buff_iter = &m_buff->back();
     for (auto& slot : m_slot_list | std::views::reverse) {
-      slot.blk = --buff_iter;
+      slot.blk = buff_iter--;
       slot.next = last_slot;
       last_slot = &slot;
     }
