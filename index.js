@@ -1,6 +1,6 @@
 var index =
 [
-    [ "Building", "index.html#autotoc_md0", [
+    [ "Building and installing", "index.html#autotoc_md0", [
       [ "Release mode", "index.html#autotoc_md1", null ],
       [ "Developer mode", "index.html#autotoc_md2", null ]
     ] ],

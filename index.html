@@ -110,7 +110,7 @@ $(function(){initNavTree('index.html',''); initResizable(true); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md0">Building</a>
+    <a href="#autotoc_md0">Building and installing</a>
     <ul>
       <li class="level2">
         <a href="#autotoc_md1">Release mode</a>
@@ -133,32 +133,53 @@ $(function(){initNavTree('index.html',''); initResizable(true); });
 </blockquote>
 <dl class="section note"><dt>Note</dt><dd>As of now, performance not benchmarked.   </dd></dl>
 <h1><a class="anchor" id="autotoc_md0"></a>
-Building</h1>
+Building and installing</h1>
 <ul>
+<li>Why would you even want to install this project though. Goodness.</li>
 <li>Requires a compiler with C++23 support, and module support. Doesn't need to support import std.</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md1"></a>
 Release mode</h2>
+<ul>
+<li>For Unix:</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>So far, only Linux and Mac have been tested. For Mac, only tested through GitHub Actions.</dd></dl>
 <div class="fragment"><div class="line"># if you do use conan</div>
-<div class="line">conan install . -s build_type=RelWithDebInfo -s compiler.cppstd=23 --build=missing</div>
-<div class="line">cmake --preset release-conan</div>
-<div class="line">cmake --build build/rel</div>
+<div class="line">conan install . -s build_type=RelWithDebInfo -s compiler.cppstd=20 --build=missing</div>
+<div class="line">cmake --preset release-conan-unix</div>
+<div class="line">cmake --build build/RelWithDebInfo</div>
 </div><!-- fragment --><div class="fragment"><div class="line"># otherwise</div>
 <div class="line">cmake --preset release</div>
-<div class="line">cmake --build build/rel</div>
+<div class="line">cmake --build build/RelWithDebInfo</div>
+</div><!-- fragment --><ul>
+<li>For Windows:</li>
+</ul>
+<div class="fragment"><div class="line"># if you do use conan</div>
+<div class="line">conan install . -s build_type=RelWithDebInfo -s compiler.cppstd=20 --build=missing</div>
+<div class="line">cmake --preset release-conan-msvc</div>
+<div class="line">cmake --build build/RelWithDebInfo</div>
+</div><!-- fragment --><div class="fragment"><div class="line"># otherwise</div>
+<div class="line">cmake --preset release-msvc</div>
+<div class="line">cmake --build build/RelWithDebInfo</div>
 </div><!-- fragment --><ul>
 <li>To install, run:</li>
 </ul>
-<div class="fragment"><div class="line">cmake --build build/rel --target install</div>
+<div class="fragment"><div class="line">cmake --build build/RelWithDebInfo --target install</div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md2"></a>
 Developer mode</h2>
+<ul>
+<li>For Unix:</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>So far, only Linux and Mac have been tested. For Mac, only tested through GitHub Actions.</dd></dl>
 <div class="fragment"><div class="line"># if you do use conan</div>
-<div class="line">conan install . -s build_type=Debug -s compiler.cppstd=23 --build=missing</div>
-<div class="line">cmake --preset dev-conan</div>
-<div class="line">cmake --build build/dev</div>
+<div class="line">conan install . -s build_type=Debug -s compiler.cppstd=20 --build=missing</div>
+<div class="line"># requires doxygen, gcovr and graphviz</div>
+<div class="line">cmake --preset dev-conan-unix</div>
+<div class="line"># if you do NOT use conan</div>
+<div class="line">cmake --build build/Debug</div>
 </div><!-- fragment --><div class="fragment"><div class="line"># otherwise</div>
-<div class="line">cmake --preset dev-conan </div>
-<div class="line">cmake --build build/dev</div>
+<div class="line">cmake --preset dev</div>
+<div class="line">cmake --build build/Debug</div>
 <div class="line"># default options:</div>
 <div class="line"># -D tsds_ASAN=ON</div>
 <div class="line"># -D tsds_MSAN=OFF</div>
@@ -168,9 +189,27 @@ Developer mode</h2>
 </div><!-- fragment --><ul>
 <li>Some extra developer options:</li>
 </ul>
-<div class="fragment"><div class="line"># some fancy HTML files</div>
+<div class="fragment"><div class="line"># only with dev-conan.</div>
+<div class="line"># coverage requires gcovr</div>
+<div class="line"># coverage only works with GCC/Clang</div>
+<div class="line"># docs requires doxygen and graphviz</div>
 <div class="line">cmake --build build/dev --target coverage</div>
 <div class="line">cmake --build build/dev --target docs</div>
+</div><!-- fragment --><ul>
+<li>For Windows</li>
+</ul>
+<div class="fragment"><div class="line"># if you do use conan</div>
+<div class="line">conan install . -s build_type=Debug -s compiler.cppstd=20 --build=missing</div>
+<div class="line"># requires doxygen and graphviz. Coverage not possible for Windows.</div>
+<div class="line"># assuming you use Visual Studio generator.</div>
+<div class="line">cmake --preset dev-conan-msvc</div>
+<div class="line"># otherwise</div>
+<div class="line"># cmake --preset dev</div>
+<div class="line">cmake --build build</div>
+</div><!-- fragment --><div class="fragment"><div class="line"># otherwise</div>
+<div class="line">cmake --preset dev</div>
+<div class="line">cmake --build build/Debug</div>
+<div class="line"># the default options don&#39;t do crap on Windows. Save for tsds_DEV.</div>
 </div><!-- fragment -->  <h1><a class="anchor" id="libref"></a>
 Library reference</h1>
 <p><a class="el" href="library_reference.html">Reference page</a> </p>

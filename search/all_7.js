@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['rebind_0',['rebind',['../structtsds_1_1PoolAlloc_1_1rebind.html',1,'tsds::PoolAlloc']]],
-  ['reference_1',['reference',['../index.html#devref',1,'Developer reference'],['../index.html#libref',1,'Library reference']]],
-  ['reference_20page_2',['Reference page',['../library_reference.html',1,'index']]],
-  ['release_20mode_3',['Release mode',['../index.html#autotoc_md1',1,'']]]
+  ['page_0',['Reference page',['../library_reference.html',1,'index']]],
+  ['pool_20allocator_1',['Pool allocator',['../library_reference.html#pool_alloc',1,'']]],
+  ['poolalloc_2',['PoolAlloc',['../classtsds_1_1PoolAlloc.html',1,'tsds']]],
+  ['poolalloc_3c_20other_2c_20nblock_2c_20buffinitalloc_20_3e_3',['PoolAlloc&lt; Other, NBlock, BuffInitAlloc &gt;',['../classtsds_1_1PoolAlloc.html',1,'tsds']]]
 ];
