@@ -13,7 +13,6 @@
 #include <cstddef>
 #include <cstdlib>
 #include <memory>
-#include <mutex>
 #include <new>
 #include <ranges>
 #include <type_traits>
@@ -61,34 +60,29 @@ public:
    * @name Special Member Functions
    * @brief Constructs a @ref PoolAlloc.
    */
-  constexpr PoolAlloc() noexcept(noexcept(BuffAllocType{}.allocate(1))) {
-    get_alloc_buf();
-  }
+  constexpr PoolAlloc() noexcept(noexcept(BuffAllocType{}.allocate(1)));
   /**
    * @name Special Member Functions
    * @brief Increments the refcount to the buffer held by the copied @ref
    * PoolAlloc.
    */
-  constexpr PoolAlloc(const PoolAlloc&) noexcept; // NOLINT(*named-parameter*)
+  constexpr PoolAlloc(const PoolAlloc& t_other) noexcept;
   /**
    * @name Special Member Functions
    * @brief Same as @ref PoolAlloc(const PoolAlloc&), but it doesn't bump the
    * refcount.
    */
-  constexpr PoolAlloc(PoolAlloc&&) noexcept; // NOLINT(*named-parameter*)
+  constexpr PoolAlloc(PoolAlloc&& t_other) noexcept;
   /**
    * @copydoc PoolAlloc(const PoolAlloc&)
    */
-  constexpr auto
-  operator=(const PoolAlloc&) noexcept // NOLINT(*named-parameter*)
-      -> PoolAlloc&;
+  constexpr auto operator=(const PoolAlloc& t_other) noexcept -> PoolAlloc&;
   /**
    * @name Special Member Functions
    * @brief Same as @ref operator=(const PoolAlloc&), but it doesn't bump the
    * refcount.
    */
-  constexpr auto operator=(PoolAlloc&&) noexcept // NOLINT(*named-parameter*)
-      -> PoolAlloc&;
+  constexpr auto operator=(PoolAlloc&& t_other) noexcept -> PoolAlloc&;
   /**
    * @name Special Member Functions
    */
@@ -224,6 +218,7 @@ private:
    */
   class AllocWrapper {
   public:
+    explicit AllocWrapper(BuffAllocType t_alloc) : m_alloc(t_alloc) {}
     auto allocate() -> AllocBuf* { return m_alloc.allocate(1); }
     void operator()(AllocBuf* t_p_ptr) { m_alloc.deallocate(t_p_ptr, 1); }
 
@@ -232,36 +227,12 @@ private:
   };
 
   /**
-   * @brief Ensure that @ref m_alloc_buf has been fully initialized before
-   * any call to @ref allocate can take place.
-   * @important Only @c constexpr if @c shared_ptr has @c constexpr move.
-   */
-  constexpr auto get_alloc_buf() const -> std::shared_ptr<AllocBuf> {
-    std::call_once(m_init_flag, [this]() mutable {
-      m_alloc = AllocWrapper{};
-      auto* buf = m_alloc.allocate();
-      m_alloc_buf = std::move(std::unique_ptr<AllocBuf, AllocWrapper&>(
-          new (buf) AllocBuf, m_alloc));
-    });
-    return m_alloc_buf;
-  }
-
-  // all of these, while marked mutable, needs only be mutable during
-  // the initialization. After initialization, they can and should be used like
-  // const
-
-  /**
    * @brief Points to a block of allocation buffer.
    * Being a shared pointer, this allows easy (but NOT trivial) copying. And,
    * it's kind of the only way we can satisfy the named requirement of
    * Allocator.
    */
-  mutable std::shared_ptr<AllocBuf> m_alloc_buf{nullptr};
-  mutable AllocWrapper m_alloc;
-  /**
-   * @brief We must wait for the buffer to be allocated.
-   */
-  mutable std::once_flag m_init_flag;
+  std::shared_ptr<AllocBuf> m_alloc_buf{nullptr};
 };
 
 /**
@@ -333,33 +304,48 @@ private:
 
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
-constexpr PoolAlloc<T, NBlock, BuffInitAlloc>::PoolAlloc(
-    const PoolAlloc& t_other) noexcept
-    : m_alloc_buf(t_other.get_alloc_buf()) {
-  // if @ref m_alloc_buf is initialized, we know @ref m_alloc_buf of @a t_other
-  // has also been initialized. Hence, we don't need the check of @ref
-  // m_init_flag anymore.
-  std::call_once(m_init_flag, []() {});
+constexpr PoolAlloc<T, NBlock, BuffInitAlloc>::PoolAlloc() noexcept(
+    noexcept(BuffAllocType{}.allocate(1))) {
+  if (std::is_constant_evaluated()) {
+    return;
+  }
+  auto alloc = AllocWrapper{BuffAllocType{}};
+  auto* buf = alloc.allocate();
+  m_alloc_buf = std::shared_ptr<AllocBuf>(new (buf) AllocBuf, alloc);
 }
 
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
 constexpr PoolAlloc<T, NBlock, BuffInitAlloc>::PoolAlloc(
-    PoolAlloc&& t_other) noexcept
-    : m_alloc_buf{t_other.get_alloc_buf()} {
-  t_other.m_alloc_buf = nullptr;
-  std::call_once(m_init_flag, []() {});
+    const PoolAlloc& t_other) noexcept {
+  if (std::is_constant_evaluated()) {
+    return;
+  }
+  m_alloc_buf = t_other.m_alloc_buf;
+}
+
+template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
+  requires std::is_same_v<T, std::remove_reference_t<T>>
+constexpr PoolAlloc<T, NBlock, BuffInitAlloc>::PoolAlloc(
+    PoolAlloc&& t_other) noexcept {
+  if (std::is_constant_evaluated()) {
+    return;
+  }
+  m_alloc_buf = std::move(t_other.m_alloc_buf);
 }
 
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
   requires std::is_same_v<T, std::remove_reference_t<T>>
 constexpr auto PoolAlloc<T, NBlock, BuffInitAlloc>::operator=(
     const PoolAlloc& t_other) noexcept -> PoolAlloc& {
+  if (std::is_constant_evaluated()) {
+    return *this;
+  }
   if (this == &t_other) {
     return *this;
   }
-  m_alloc_buf = t_other.get_alloc_buf();
-  std::call_once(m_init_flag, []() {});
+  m_alloc_buf = t_other.m_alloc_buf;
+  return *this;
 }
 
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
@@ -367,9 +353,11 @@ template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
 constexpr auto
 PoolAlloc<T, NBlock, BuffInitAlloc>::operator=(PoolAlloc&& t_other) noexcept
     -> PoolAlloc& {
-  m_alloc_buf = t_other.get_alloc_buf();
-  t_other.m_alloc_buf = nullptr;
-  std::call_once(m_init_flag, []() {});
+  if (std::is_constant_evaluated()) {
+    return *this;
+  }
+  m_alloc_buf = std::move(t_other.m_alloc_buf);
+  return *this;
 }
 
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
@@ -394,7 +382,7 @@ PoolAlloc<T, NBlock, BuffInitAlloc>::allocate(std::size_t /*unused*/) noexcept
   if (std::is_constant_evaluated()) {
     return static_cast<pointer>(::operator new(sizeof(T)));
   }
-  return get_alloc_buf()->allocate();
+  return m_alloc_buf->allocate();
 }
 
 template <class T, std::size_t NBlock, template <typename> class BuffInitAlloc>
