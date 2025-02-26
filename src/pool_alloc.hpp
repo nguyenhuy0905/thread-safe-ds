@@ -287,7 +287,7 @@ private:
   /**
    * @brief The buffer.
    */
-  std::array<uint8_t, sizeof(T) * NBlock> m_buff{};
+  alignas(T) std::array<uint8_t, sizeof(T) * NBlock> m_buff{};
   /**
    * @brief Holds instances @ref AllocSlot.
    *
