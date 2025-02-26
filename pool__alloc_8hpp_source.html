@@ -234,7 +234,7 @@ $(function(){initNavTree('pool__alloc_8hpp_source.html',''); initResizable(true)
 <div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="classtsds_1_1PoolAlloc.html#a271c6803fe54873d21884b51a58700d5">deallocate</a>(pointer t_p_obj) noexcept;</div>
 <div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span> </div>
 <div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>private:</div>
-<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>  std::array&lt;uint8_t, sizeof(T) * NBlock&gt; m_buff{};</div>
+<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>  alignas(T) std::array&lt;uint8_t, sizeof(T) * NBlock&gt; m_buff{};</div>
 <div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>  std::array&lt;AllocSlot, NBlock&gt; m_slot_list{};</div>
 <div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>  std::atomic&lt;AllocSlot*&gt; m_head{};</div>
 <div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>};</div>
