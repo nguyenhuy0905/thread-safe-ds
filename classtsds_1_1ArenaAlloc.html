@@ -105,26 +105,79 @@ $(function(){initNavTree('classtsds_1_1ArenaAlloc.html',''); initResizable(true)
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classtsds_1_1ArenaAlloc-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">tsds::ArenaAlloc&lt; Size, BuffInitAlloc &gt; Class Template Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Bulk-deallocate memory allocator. Work in progress.  
+<p>Your everyday arena allocator, with some thread-safety.  
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="arena__alloc_8hpp_source.html">arena_alloc.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtsds_1_1ArenaAlloc_1_1AllocBuff.html">AllocBuff</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">It's nicer than having 2 similar-looking arguments in the function call I suppose?  <a href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ae86a643e8eb4e54a9ad33be7354f13f6" id="r_ae86a643e8eb4e54a9ad33be7354f13f6"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae86a643e8eb4e54a9ad33be7354f13f6">allocate</a> (<a class="el" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a> t_alloc_info) noexcept -&gt; void *</td></tr>
+<tr class="memdesc:ae86a643e8eb4e54a9ad33be7354f13f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates at least <code class="param">t_size</code> bytes at alignment <code class="param">t_align</code>.  <br /></td></tr>
+<tr class="separator:ae86a643e8eb4e54a9ad33be7354f13f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aebf63fd1d47e56e5a30df6426ab7337e" id="r_aebf63fd1d47e56e5a30df6426ab7337e"><td class="memItemLeft" align="right" valign="top"><a id="aebf63fd1d47e56e5a30df6426ab7337e" name="aebf63fd1d47e56e5a30df6426ab7337e"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>deallocate</b> (void *)</td></tr>
+<tr class="memdesc:aebf63fd1d47e56e5a30df6426ab7337e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Does nothing at all. <br /></td></tr>
+<tr class="separator:aebf63fd1d47e56e5a30df6426ab7337e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;std::size_t Size, template&lt; typename &gt; typename BuffInitAlloc = std::allocator&gt;<br />
-class tsds::ArenaAlloc&lt; Size, BuffInitAlloc &gt;</div><p>Bulk-deallocate memory allocator. Work in progress. </p>
+requires ValidSize&lt;Size&gt;<br />
+class tsds::ArenaAlloc&lt; Size, BuffInitAlloc &gt;</div><p>Your everyday arena allocator, with some thread-safety. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">Size</td><td>The size in bytes of the buffer managed by <em class="arg">this</em> allocator. </td></tr>
-    <tr><td class="paramname">BuffInitAlloc</td><td>The allocator used to allocate the buffer. Only used once. </td></tr>
+    <tr><td class="paramname">Size</td><td>The byte size of the buffer. </td></tr>
+    <tr><td class="paramname">BuffInitAlloc</td><td>The allocator. It will be <code>rebind</code>ed anyways, so the template parameter type doesn't really matter. </td></tr>
   </table>
   </dd>
 </dl>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="ae86a643e8eb4e54a9ad33be7354f13f6" name="ae86a643e8eb4e54a9ad33be7354f13f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae86a643e8eb4e54a9ad33be7354f13f6">&#9670;&#160;</a></span>allocate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t Size, template&lt; typename &gt; typename BuffInitAlloc = std::allocator&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto <a class="el" href="classtsds_1_1ArenaAlloc.html">tsds::ArenaAlloc</a>&lt; Size, BuffInitAlloc &gt;::allocate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a></td>          <td class="paramname"><span class="paramname"><em>t_alloc_info</em></span></td><td>)</td>
+          <td> -&gt;  void *</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Allocates at least <code class="param">t_size</code> bytes at alignment <code class="param">t_align</code>. </p>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to the newly allocated memory block. </dd></dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li><a class="el" href="arena__alloc_8hpp_source.html">arena_alloc.hpp</a></li>
 </ul>
 </div><!-- contents -->

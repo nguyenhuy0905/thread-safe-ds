@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.13.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>tsds: Class List</title>
+<title>tsds: tsds::ArenaAlloc&lt; Size, BuffInitAlloc &gt;::AllocInfo Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
@@ -78,7 +78,7 @@ $(function() { codefold.init(0); });
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(function(){initNavTree('annotated.html',''); initResizable(true); });
+$(function(){initNavTree('structtsds_1_1ArenaAlloc_1_1AllocInfo.html',''); initResizable(true); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -104,24 +104,46 @@ $(function(){initNavTree('annotated.html',''); initResizable(true); });
 </div>
 
 <div class="header">
-  <div class="headertitle"><div class="title">Class List</div></div>
+  <div class="summary">
+<a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="structtsds_1_1ArenaAlloc_1_1AllocInfo-members.html">List of all members</a>  </div>
+  <div class="headertitle"><div class="title">tsds::ArenaAlloc&lt; Size, BuffInitAlloc &gt;::AllocInfo Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock">Here are the classes, structs, unions and interfaces with brief descriptions:</div><div class="directory">
-<div class="levels">[detail level <span onclick="javascript:dynsection.toggleLevel(1);">1</span><span onclick="javascript:dynsection.toggleLevel(2);">2</span><span onclick="javascript:dynsection.toggleLevel(3);">3</span>]</div><table class="directory">
-<tr id="row_0_" class="even"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_0_" class="arrow" onclick="dynsection.toggleFolder('0_')">&#9660;</span><span class="icona"><span class="icon">N</span></span><b>tsds</b></td><td class="desc"></td></tr>
-<tr id="row_0_0_" class="odd"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span id="arr_0_0_" class="arrow" onclick="dynsection.toggleFolder('0_0_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="classtsds_1_1ArenaAlloc.html" target="_self">ArenaAlloc</a></td><td class="desc">Your everyday arena allocator, with some thread-safety </td></tr>
-<tr id="row_0_0_0_" class="even"><td class="entry"><span style="width:48px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="classtsds_1_1ArenaAlloc_1_1AllocBuff.html" target="_self">AllocBuff</a></td><td class="desc"></td></tr>
-<tr id="row_0_0_1_" class="odd"><td class="entry"><span style="width:48px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html" target="_self">AllocInfo</a></td><td class="desc">It's nicer than having 2 similar-looking arguments in the function call I suppose? </td></tr>
-<tr id="row_0_1_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span id="arr_0_1_" class="arrow" onclick="dynsection.toggleFolder('0_1_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="classtsds_1_1PoolAlloc.html" target="_self">PoolAlloc</a></td><td class="desc">A fix-sized pool allocator </td></tr>
-<tr id="row_0_1_0_" class="odd"><td class="entry"><span style="width:48px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="structtsds_1_1PoolAlloc_1_1rebind.html" target="_self">rebind</a></td><td class="desc"></td></tr>
+
+<p>It's nicer than having 2 similar-looking arguments in the function call I suppose?  
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="arena__alloc_8hpp_source.html">arena_alloc.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:a85845f39282004aa2f7ba33a3cb9c308" id="r_a85845f39282004aa2f7ba33a3cb9c308"><td class="memItemLeft" align="right" valign="top"><a id="a85845f39282004aa2f7ba33a3cb9c308" name="a85845f39282004aa2f7ba33a3cb9c308"></a>
+std::size_t&#160;</td><td class="memItemRight" valign="bottom"><b>size</b></td></tr>
+<tr class="separator:a85845f39282004aa2f7ba33a3cb9c308"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8f7fbbf84f70c692e22a3320eae4617" id="r_aa8f7fbbf84f70c692e22a3320eae4617"><td class="memItemLeft" align="right" valign="top"><a id="aa8f7fbbf84f70c692e22a3320eae4617" name="aa8f7fbbf84f70c692e22a3320eae4617"></a>
+std::uintptr_t&#160;</td><td class="memItemRight" valign="bottom"><b>align</b></td></tr>
+<tr class="separator:aa8f7fbbf84f70c692e22a3320eae4617"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- directory -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><div class="compoundTemplParams">template&lt;std::size_t Size, template&lt; typename &gt; typename BuffInitAlloc = std::allocator&gt;<br />
+class tsds::ArenaAlloc&lt; Size, BuffInitAlloc &gt;::AllocInfo</div><p>It's nicer than having 2 similar-looking arguments in the function call I suppose? </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">size</td><td>Must be larger than 0. </td></tr>
+    <tr><td class="paramname">align</td><td>Must be a power of 2, and smaller or equal to <code class="param">size</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li><a class="el" href="arena__alloc_8hpp_source.html">arena_alloc.hpp</a></li>
+</ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><b>tsds</b></li><li class="navelem"><a class="el" href="classtsds_1_1ArenaAlloc.html">ArenaAlloc</a></li><li class="navelem"><a class="el" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
   </ul>
 </div>
