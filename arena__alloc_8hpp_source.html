@@ -127,45 +127,45 @@ $(function(){initNavTree('arena__alloc_8hpp_source.html',''); initResizable(true
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="keyword">template</span> &lt;std::<span class="keywordtype">size_t</span> Size&gt;</div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="concepttsds_1_1ValidSize.html">   19</a></span><span class="keyword">concept </span><a class="code hl_concept" href="concepttsds_1_1ValidSize.html">ValidSize</a> = <span class="keyword">requires</span> { Size &gt; 0; };</div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span></div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">template</span> &lt;std::<span class="keywordtype">size_t</span> Size, <span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">typename</span> BuffInitAlloc = std::allocator&gt;</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  <span class="keyword">requires</span> <a class="code hl_concept" href="concepttsds_1_1ValidSize.html">ValidSize&lt;Size&gt;</a></div>
-<div class="foldopen" id="foldopen00030" data-start="{" data-end="};">
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="classtsds_1_1ArenaAlloc.html">   30</a></span><span class="keyword">class </span>ArenaAlloc {</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>  ArenaAlloc() <span class="keyword">noexcept</span>(<span class="keyword">noexcept</span>(BuffAllocType{}.allocate(1))) = <span class="keywordflow">default</span>;</div>
-<div class="foldopen" id="foldopen00040" data-start="{" data-end="};">
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">   40</a></span>  <span class="keyword">struct </span><a class="code hl_class" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a> {</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    std::size_t size;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    std::uintptr_t align;</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  };</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">template</span> &lt;std::size_t Size,</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>          <span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">typename</span> BuffInitAlloc = std::allocator&gt;</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>  <span class="keyword">requires</span> <a class="code hl_concept" href="concepttsds_1_1ValidSize.html">ValidSize&lt;Size&gt;</a></div>
+<div class="foldopen" id="foldopen00031" data-start="{" data-end="};">
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno"><a class="line" href="classtsds_1_1ArenaAlloc.html">   31</a></span><span class="keyword">class </span>ArenaAlloc {</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>  ArenaAlloc() <span class="keyword">noexcept</span>(<span class="keyword">noexcept</span>(BuffAllocType{}.allocate(1))) = <span class="keywordflow">default</span>;</div>
+<div class="foldopen" id="foldopen00041" data-start="{" data-end="};">
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno"><a class="line" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">   41</a></span>  <span class="keyword">struct </span><a class="code hl_class" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a> {</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    std::size_t size;</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    std::uintptr_t align;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  };</div>
 </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  <span class="comment">// if you wonder why I would pass everything by value with this.</span></div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  <span class="keyword">static_assert</span>(std::is_trivial_v&lt;AllocInfo&gt;);</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="classtsds_1_1ArenaAlloc.html#ae86a643e8eb4e54a9ad33be7354f13f6">   51</a></span>  <span class="keyword">auto</span> <a class="code hl_function" href="classtsds_1_1ArenaAlloc.html#ae86a643e8eb4e54a9ad33be7354f13f6">allocate</a>(<a class="code hl_class" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a> t_alloc_info) <span class="keyword">noexcept</span> -&gt; <span class="keywordtype">void</span>*;</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno"><a class="line" href="classtsds_1_1ArenaAlloc.html#aebf63fd1d47e56e5a30df6426ab7337e">   55</a></span>  <span class="keyword">auto</span> <a class="code hl_function" href="classtsds_1_1ArenaAlloc.html#aebf63fd1d47e56e5a30df6426ab7337e">deallocate</a>(<span class="keywordtype">void</span>* <span class="comment">/*unused*/</span>) {}</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  <span class="keyword">class </span>AllocBuff;</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  <span class="keyword">using </span>BuffAllocType = BuffInitAlloc&lt;AllocBuff&gt;;</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  <span class="keyword">class </span>AllocWrapper {</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  <span class="keyword">public</span>:</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <span class="keyword">explicit</span> AllocWrapper(BuffAllocType&amp;&amp; t_alloc) <span class="keyword">noexcept</span>(</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>        <span class="keyword">noexcept</span>(m_alloc.allocate(1)))</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>        : m_alloc(std::move(t_alloc)) {}</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keyword">auto</span> allocate() -&gt; AllocBuff* { <span class="keywordflow">return</span> m_alloc.allocate(1); }</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keyword">auto</span> operator()(AllocBuff* t_p_buff) { m_alloc.deallocate(t_p_buff, 1); }</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  <span class="keyword">private</span>:</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    BuffAllocType m_alloc;</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  };</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  std::shared_ptr&lt;AllocBuff&gt; m_alloc_buff{[]() {</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keyword">auto</span> alloc = AllocWrapper{BuffAllocType{}};</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keyword">auto</span>* buff = alloc.allocate();</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keywordflow">return</span> std::shared_ptr&lt;AllocBuff&gt;(<span class="keyword">new</span> (buff) <a class="code hl_class" href="classtsds_1_1ArenaAlloc_1_1AllocBuff.html">AllocBuff</a>, alloc);</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  }()};</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>};</div>
-</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  <span class="comment">// if you wonder why I would pass everything by value with this.</span></div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <span class="keyword">static_assert</span>(std::is_trivial_v&lt;AllocInfo&gt;);</div>
+<div class="foldopen" id="foldopen00052" data-start="{" data-end="}">
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno"><a class="line" href="classtsds_1_1ArenaAlloc.html#ab757bd6bc9a1ada9d19b957973939dc7">   52</a></span>  <span class="keyword">auto</span> <a class="code hl_function" href="classtsds_1_1ArenaAlloc.html#ab757bd6bc9a1ada9d19b957973939dc7">allocate</a>(<a class="code hl_class" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a> t_alloc_info) <span class="keyword">noexcept</span> -&gt; <span class="keywordtype">void</span>*;</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="classtsds_1_1ArenaAlloc.html#aebf63fd1d47e56e5a30df6426ab7337e">   56</a></span>  <span class="keyword">auto</span> <a class="code hl_function" href="classtsds_1_1ArenaAlloc.html#aebf63fd1d47e56e5a30df6426ab7337e">deallocate</a>(<span class="keywordtype">void</span>* <span class="comment">/*unused*/</span>) {}</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  <span class="keyword">class </span>AllocBuff;</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  <span class="keyword">using </span>BuffAllocType = BuffInitAlloc&lt;AllocBuff&gt;;</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  <span class="keyword">class </span>AllocWrapper {</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  <span class="keyword">public</span>:</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    <span class="keyword">explicit</span> AllocWrapper(BuffAllocType&amp;&amp; t_alloc) <span class="keyword">noexcept</span>(</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>        <span class="keyword">noexcept</span>(m_alloc.allocate(1)))</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>        : m_alloc(std::move(t_alloc)) {}</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keyword">auto</span> allocate() -&gt; AllocBuff* { <span class="keywordflow">return</span> m_alloc.allocate(1); }</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="keyword">auto</span> operator()(AllocBuff* t_p_buff) { m_alloc.deallocate(t_p_buff, 1); }</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  <span class="keyword">private</span>:</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    BuffAllocType m_alloc;</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  };</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  std::shared_ptr&lt;AllocBuff&gt; m_alloc_buff{[]() {</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keyword">auto</span> alloc = AllocWrapper{BuffAllocType{}};</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keyword">auto</span>* buff = alloc.allocate();</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keywordflow">return</span> std::shared_ptr&lt;AllocBuff&gt;(<span class="keyword">new</span> (buff) <a class="code hl_class" href="classtsds_1_1ArenaAlloc_1_1AllocBuff.html">AllocBuff</a>, alloc);</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  }()};</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>};</div>
 <div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
 <div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="keyword">template</span> &lt;std::<span class="keywordtype">size_t</span> Size, <span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">typename</span> BuffInitAlloc&gt;</div>
 <div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  <span class="keyword">requires</span> <a class="code hl_concept" href="concepttsds_1_1ValidSize.html">ValidSize&lt;Size&gt;</a></div>
@@ -173,49 +173,62 @@ $(function(){initNavTree('arena__alloc_8hpp_source.html',''); initResizable(true
 <div class="line"><a id="l00081" name="l00081"></a><span class="lineno"><a class="line" href="classtsds_1_1ArenaAlloc_1_1AllocBuff.html">   81</a></span><span class="keyword">class </span>ArenaAlloc&lt;Size, BuffInitAlloc&gt;::AllocBuff {</div>
 <div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span><span class="keyword">public</span>:</div>
 <div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>  AllocBuff() = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  <span class="keyword">auto</span> <a class="code hl_function" href="classtsds_1_1ArenaAlloc.html#ae86a643e8eb4e54a9ad33be7354f13f6">allocate</a>(<a class="code hl_class" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a> t_alloc_info) -&gt; <span class="keywordtype">void</span>* {</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keyword">auto</span> align_ptr = [&amp;t_alloc_info](uint8_t* t_p_ptr) -&gt; uint8_t* {</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>      <span class="comment">// NOLINTNEXTLINE(*reinterpret-cast*)</span></div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>      <span class="keyword">auto</span> curr_head_num = <span class="keyword">reinterpret_cast&lt;</span>std::uintptr_t<span class="keyword">&gt;</span>(t_p_ptr);</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>      <span class="comment">// similar to curr_head_num % curr_head_idx since we assume align is a</span></div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>      <span class="comment">// power of 2</span></div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>      <span class="keyword">auto</span> mod = curr_head_num &amp; (t_alloc_info.align - 1);</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>      <span class="keywordflow">return</span> (mod == 0) ? t_p_ptr : t_p_ptr + t_alloc_info.align - mod;</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    };</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="keyword">auto</span> curr_head_idx = m_head_idx.load(std::memory_order::relaxed);</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <span class="keyword">auto</span>* curr_head_ptr = (&amp;m_buff.front() + curr_head_idx);</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="keyword">auto</span>* aligned_head = align_ptr(curr_head_ptr);</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="keyword">auto</span>* next_head = aligned_head + t_alloc_info.size;</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="keywordflow">if</span> (next_head - &amp;m_buff.front() &gt; &amp;m_buff.back()) {</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>      <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    }</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span> </div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    <span class="keywordflow">while</span> (!m_head_idx.compare_exchange_weak(curr_head_idx, next_head,</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>                                             std::memory_order::release,</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>                                             std::memory_order::relaxed)) {</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>      curr_head_ptr = (&amp;m_buff.front() + curr_head_idx);</div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>      aligned_head = align_ptr(curr_head_ptr);</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>      next_head = aligned_head + t_alloc_info.size;</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>      <span class="keywordflow">if</span> (next_head - &amp;m_buff.front() &gt; &amp;m_buff.back()) {</div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>        <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>      }</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    }</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    <span class="keywordflow">return</span> <span class="keyword">static_cast&lt;</span><span class="keywordtype">void</span>*<span class="keyword">&gt;</span>(aligned_head);</div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>  }</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>  std::array&lt;uint8_t, Size&gt; m_buff{};</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>  std::atomic&lt;<span class="keyword">decltype</span>(Size)&gt; m_head_idx{};</div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>};</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  <span class="keyword">auto</span> <a class="code hl_function" href="classtsds_1_1ArenaAlloc.html#ab757bd6bc9a1ada9d19b957973939dc7">allocate</a>(<a class="code hl_class" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a> t_alloc_info) -&gt; <span class="keywordtype">void</span>* {</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keyword">auto</span> align_index = [&amp;](std::size_t t_idx) -&gt; std::size_t {</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>      <span class="comment">// similar to curr_head_num % curr_head_idx since we assume align is a</span></div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>      <span class="comment">// power of 2</span></div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>      <span class="keyword">auto</span>* head_ptr = &amp;m_buff.front() + t_idx;</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>      <span class="comment">// NOLINTNEXTLINE(*reinterpret-cast*)</span></div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>      <span class="keyword">auto</span> curr_head_num = <span class="keyword">reinterpret_cast&lt;</span>std::uintptr_t<span class="keyword">&gt;</span>(head_ptr);</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>      <span class="keyword">auto</span> mod = curr_head_num &amp; (t_alloc_info.align - 1);</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>      <span class="keywordflow">return</span> (mod == 0)</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>                 ? t_idx</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>                 : <span class="keyword">static_cast&lt;</span>std::size_t<span class="keyword">&gt;</span>(t_idx + t_alloc_info.align - mod);</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    };</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="keyword">auto</span> curr_head_idx = m_head_idx.load(std::memory_order::relaxed);</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="keyword">auto</span> aligned_idx = align_index(curr_head_idx);</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    <span class="keyword">auto</span> next_head_idx =</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>        <span class="keyword">static_cast&lt;</span>std::size_t<span class="keyword">&gt;</span>(aligned_idx + t_alloc_info.size);</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    <span class="keywordflow">if</span> (next_head_idx &gt;= Size) {</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>      <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    }</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    <span class="keywordflow">while</span> (!m_head_idx.compare_exchange_weak(curr_head_idx, next_head_idx,</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>                                             std::memory_order::release,</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>                                             std::memory_order::acquire)) {</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>      aligned_idx = align_index(curr_head_idx);</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>      next_head_idx = <span class="keyword">static_cast&lt;</span>std::size_t<span class="keyword">&gt;</span>(aligned_idx + t_alloc_info.size);</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>      <span class="keywordflow">if</span> (next_head_idx &gt;= Size) {</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>        <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>      }</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    }</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    <span class="keywordflow">return</span> <span class="keyword">static_cast&lt;</span><span class="keywordtype">void</span>*<span class="keyword">&gt;</span>(&amp;m_buff.front() + aligned_idx);</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>  }</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span> </div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>  std::array&lt;uint8_t, Size&gt; m_buff{};</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>  std::atomic&lt;<span class="keyword">decltype</span>(Size)&gt; m_head_idx{};</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>};</div>
 </div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>}</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span><span class="preprocessor">#endif </span><span class="comment">// !TSDS_ARENA_ALLOC_HPP</span></div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span> </div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="keyword">template</span> &lt;std::<span class="keywordtype">size_t</span> Size, <span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">typename</span> BuffInitAlloc&gt;</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>  <span class="keyword">requires</span> <a class="code hl_concept" href="concepttsds_1_1ValidSize.html">ValidSize&lt;Size&gt;</a></div>
+<div class="foldopen" id="foldopen00124" data-start="{" data-end="}">
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno"><a class="line" href="classtsds_1_1ArenaAlloc.html#ab757bd6bc9a1ada9d19b957973939dc7">  124</a></span><span class="keyword">auto</span> <a class="code hl_function" href="classtsds_1_1ArenaAlloc.html#ab757bd6bc9a1ada9d19b957973939dc7">ArenaAlloc&lt;Size, BuffInitAlloc&gt;::allocate</a>(<a class="code hl_class" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a> t_alloc_info) <span class="keyword">noexcept</span></div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>    -&gt; <span class="keywordtype">void</span>* {</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>  <span class="keywordflow">return</span> m_alloc_buff-&gt;allocate(t_alloc_info);</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>}</div>
+</div>
+</div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>}</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span><span class="preprocessor">#endif </span><span class="comment">// !TSDS_ARENA_ALLOC_HPP</span></div>
+</div>
 <div class="ttc" id="aclasstsds_1_1ArenaAlloc_1_1AllocBuff_html"><div class="ttname"><a href="classtsds_1_1ArenaAlloc_1_1AllocBuff.html">tsds::ArenaAlloc::AllocBuff</a></div><div class="ttdef"><b>Definition</b> arena_alloc.hpp:81</div></div>
-<div class="ttc" id="aclasstsds_1_1ArenaAlloc_html_ae86a643e8eb4e54a9ad33be7354f13f6"><div class="ttname"><a href="classtsds_1_1ArenaAlloc.html#ae86a643e8eb4e54a9ad33be7354f13f6">tsds::ArenaAlloc::allocate</a></div><div class="ttdeci">auto allocate(AllocInfo t_alloc_info) noexcept -&gt; void *</div><div class="ttdoc">Allocates at least t_size bytes at alignment t_align.</div></div>
-<div class="ttc" id="aclasstsds_1_1ArenaAlloc_html_aebf63fd1d47e56e5a30df6426ab7337e"><div class="ttname"><a href="classtsds_1_1ArenaAlloc.html#aebf63fd1d47e56e5a30df6426ab7337e">tsds::ArenaAlloc::deallocate</a></div><div class="ttdeci">auto deallocate(void *)</div><div class="ttdoc">Does nothing at all.</div><div class="ttdef"><b>Definition</b> arena_alloc.hpp:55</div></div>
+<div class="ttc" id="aclasstsds_1_1ArenaAlloc_html_ab757bd6bc9a1ada9d19b957973939dc7"><div class="ttname"><a href="classtsds_1_1ArenaAlloc.html#ab757bd6bc9a1ada9d19b957973939dc7">tsds::ArenaAlloc::allocate</a></div><div class="ttdeci">auto allocate(AllocInfo t_alloc_info) noexcept -&gt; void *</div><div class="ttdoc">Allocates at least t_size bytes at alignment t_align.</div><div class="ttdef"><b>Definition</b> arena_alloc.hpp:124</div></div>
+<div class="ttc" id="aclasstsds_1_1ArenaAlloc_html_aebf63fd1d47e56e5a30df6426ab7337e"><div class="ttname"><a href="classtsds_1_1ArenaAlloc.html#aebf63fd1d47e56e5a30df6426ab7337e">tsds::ArenaAlloc::deallocate</a></div><div class="ttdeci">auto deallocate(void *)</div><div class="ttdoc">Does nothing at all.</div><div class="ttdef"><b>Definition</b> arena_alloc.hpp:56</div></div>
 <div class="ttc" id="aconcepttsds_1_1ValidSize_html"><div class="ttname"><a href="concepttsds_1_1ValidSize.html">tsds::ValidSize</a></div><div class="ttdef"><b>Definition</b> arena_alloc.hpp:19</div></div>
-<div class="ttc" id="astructtsds_1_1ArenaAlloc_1_1AllocInfo_html"><div class="ttname"><a href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">tsds::ArenaAlloc::AllocInfo</a></div><div class="ttdoc">It&#39;s nicer than having 2 similar-looking arguments in the function call I suppose?</div><div class="ttdef"><b>Definition</b> arena_alloc.hpp:40</div></div>
+<div class="ttc" id="astructtsds_1_1ArenaAlloc_1_1AllocInfo_html"><div class="ttname"><a href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">tsds::ArenaAlloc::AllocInfo</a></div><div class="ttdoc">It&#39;s nicer than having 2 similar-looking arguments in the function call I suppose?</div><div class="ttdef"><b>Definition</b> arena_alloc.hpp:41</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

@@ -127,9 +127,9 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ae86a643e8eb4e54a9ad33be7354f13f6" id="r_ae86a643e8eb4e54a9ad33be7354f13f6"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae86a643e8eb4e54a9ad33be7354f13f6">allocate</a> (<a class="el" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a> t_alloc_info) noexcept -&gt; void *</td></tr>
-<tr class="memdesc:ae86a643e8eb4e54a9ad33be7354f13f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates at least <code class="param">t_size</code> bytes at alignment <code class="param">t_align</code>.  <br /></td></tr>
-<tr class="separator:ae86a643e8eb4e54a9ad33be7354f13f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab757bd6bc9a1ada9d19b957973939dc7" id="r_ab757bd6bc9a1ada9d19b957973939dc7"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab757bd6bc9a1ada9d19b957973939dc7">allocate</a> (<a class="el" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a> t_alloc_info) noexcept -&gt; void *</td></tr>
+<tr class="memdesc:ab757bd6bc9a1ada9d19b957973939dc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates at least <code class="param">t_size</code> bytes at alignment <code class="param">t_align</code>.  <br /></td></tr>
+<tr class="separator:ab757bd6bc9a1ada9d19b957973939dc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aebf63fd1d47e56e5a30df6426ab7337e" id="r_aebf63fd1d47e56e5a30df6426ab7337e"><td class="memItemLeft" align="right" valign="top"><a id="aebf63fd1d47e56e5a30df6426ab7337e" name="aebf63fd1d47e56e5a30df6426ab7337e"></a>
 auto&#160;</td><td class="memItemRight" valign="bottom"><b>deallocate</b> (void *)</td></tr>
 <tr class="memdesc:aebf63fd1d47e56e5a30df6426ab7337e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Does nothing at all. <br /></td></tr>
@@ -147,13 +147,14 @@ class tsds::ArenaAlloc&lt; Size, BuffInitAlloc &gt;</div><p>Your everyday arena 
   </dd>
 </dl>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="ae86a643e8eb4e54a9ad33be7354f13f6" name="ae86a643e8eb4e54a9ad33be7354f13f6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae86a643e8eb4e54a9ad33be7354f13f6">&#9670;&#160;</a></span>allocate()</h2>
+<a id="ab757bd6bc9a1ada9d19b957973939dc7" name="ab757bd6bc9a1ada9d19b957973939dc7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab757bd6bc9a1ada9d19b957973939dc7">&#9670;&#160;</a></span>allocate()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;std::size_t Size, template&lt; typename &gt; typename BuffInitAlloc = std::allocator&gt; </div>
+template&lt;std::size_t Size, template&lt; typename &gt; typename BuffInitAlloc&gt; <br />
+requires ValidSize&lt;Size&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -162,7 +163,7 @@ template&lt;std::size_t Size, template&lt; typename &gt; typename BuffInitAlloc 
           <td class="memname">auto <a class="el" href="classtsds_1_1ArenaAlloc.html">tsds::ArenaAlloc</a>&lt; Size, BuffInitAlloc &gt;::allocate </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structtsds_1_1ArenaAlloc_1_1AllocInfo.html">AllocInfo</a></td>          <td class="paramname"><span class="paramname"><em>t_alloc_info</em></span></td><td>)</td>
-          <td> -&gt;  void *</td>
+          <td> -&gt; void*</td>
         </tr>
       </table>
   </td>
