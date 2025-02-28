@@ -64,25 +64,46 @@ TEST_CASE("Hopefully it compiles", "[arena_alloc]") {
   std::array<std::thread, 8> test_threads{}; // NOLINT(*magic-number*)
   for (uint8_t i = 0; i < 8; ++i) {          // NOLINT(*magic-number*)
     test_threads.at(i) = std::thread{[&]() mutable {
-      auto* lnum = static_cast<long*>(
-          test.allocate({.size = sizeof(long), .align = alignof(long)}));
-      auto* num = static_cast<int*>(
-          test.allocate({.size = sizeof(int), .align = alignof(int)}));
-      auto* chr = static_cast<char*>(
-          test.allocate({.size = sizeof(char), .align = alignof(char)}));
-      assert(lnum != nullptr);
-      assert(num != nullptr);
-      assert(chr != nullptr);
-      *lnum = 69; // NOLINT(*magic-number*)
-      *num = 4;
-      *chr = 'c';
-      assert(*chr == 'c');
-      assert(*num == 4);
-      assert(*lnum == 69);
+      std::array<std::tuple<long*, int*, char*>, 16> // NOLINT(*magic-number*)
+          arr{};
+      for (uint8_t j = 0; j < 16; ++j) { // NOLINT(*magic-number*)
+        // the worst case is
+        // char then int then long requested, due to alignment.
+        // Which, if requested in that order, takes a total of 16 bytes,
+        // while technically only 13 is needed.
+        // With other contending threads, the worst case is something like:
+        // a char
+        // then two ints, so alignment is now divisible by 4 but potentially NOT
+        // by 8
+        // then a long, which needs 4 extra padding bytes.
+        auto* chr = static_cast<char*>(
+            test.allocate({.size = sizeof(char), .align = alignof(char)}));
+        auto* num = static_cast<int*>(
+            test.allocate({.size = sizeof(int), .align = alignof(int)}));
+        auto* lnum = static_cast<long*>(
+            test.allocate({.size = sizeof(long), .align = alignof(long)}));
+        assert(lnum != nullptr);
+        assert(num != nullptr);
+        assert(chr != nullptr);
+        *lnum = j + 97; // NOLINT(*magic-number*)
+        *num = 4 + j;
+        *chr = 'c';
+        assert(*chr == 'c');
+        assert(*num == 4 + j);
+        assert(*lnum == 97 + j);
+        arr.at(j) = std::make_tuple(lnum, num, chr);
+      }
+
+      for (uint8_t j = 0; j < 16; ++j) { // NOLINT(*magic-number*)
+        auto& [lnum, num, chr] = arr.at(j);
+        assert(*chr == 'c');
+        assert(*num == 4 + j);
+        assert(*lnum == 97 + j);
+      }
     }};
   }
-  for(auto& thr : test_threads) {
-    if(thr.joinable()) {
+  for (auto& thr : test_threads) {
+    if (thr.joinable()) {
       thr.join();
     }
   }
