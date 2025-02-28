@@ -28,13 +28,20 @@ if(BUILD_TESTING)
   find_package(Catch2 REQUIRED)
   add_executable(tsds_test)
   # clean up GCOV files
-  add_custom_command(TARGET tsds_test
-  COMMENT "Clean up GCOV files"
-  PRE_LINK
-  COMMAND ${CMAKE_COMMAND} -E rm -rf
-  ${PROJECT_BINARY_DIR}/*.gcno
-  ${PROJECT_BINARY_DIR}/*.gcda
+  file(GLOB RECURSE CLEANUP_GCNO_FILES
+    "${PROJECT_BINARY_DIR}/*.gcno"
   )
+  file(GLOB RECURSE CLEANUP_GCDA_FILES
+    "${PROJECT_BINARY_DIR}/*.gcda"
+  )
+  if(CLEANUP_GCNO_FILES AND CLEANUP_GCDA_FILES)
+    add_custom_command(TARGET tsds_test
+      COMMENT "Clean up GCOV files"
+      PRE_LINK
+      COMMAND ${CMAKE_COMMAND} -E rm -rf
+      ${CLEANUP_GCNO_FILES} ${CLEANUP_GCDA_FILES}
+    )
+  endif()
   target_sources(tsds_test
     PRIVATE
     tsds.test.cpp
