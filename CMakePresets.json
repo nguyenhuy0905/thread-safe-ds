@@ -69,6 +69,19 @@
       }
     },
     {
+      "name": "module",
+      "hidden": true,
+      "description": "Module build without import std, due to C++20 only",
+      "cacheVariables": {
+        "tsds_MODULE": "ON"
+      }
+    },
+    {
+      "name": "dev-module",
+      "inherits": ["dev", "module"],
+      "binaryDir": "${sourceDir}/build/Debug-module"
+    },
+    {
       "name": "dev-conan-unix",
       "inherits": ["dev"],
       "cacheVariables": {
@@ -76,11 +89,19 @@
       }
     },
     {
+      "name": "dev-conan-unix-module",
+      "inherits": ["dev-module", "dev-conan-unix"]
+    },
+    {
       "name": "dev-conan-msvc",
       "inherits": ["dev"],
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "build/generators/conan_toolchain.cmake"
       }
+    },
+    {
+      "name": "dev-conan-msvc-module",
+      "inherits": ["dev-module", "dev-conan-msvc"]
     },
     {
       "name": "dev-ci-unix",
@@ -107,6 +128,11 @@
       }
     },
     {
+      "name": "release-module",
+      "inherits": ["release", "module"],
+      "binaryDir": "${sourceDir}/build/RelWithDebInfo-module"
+    },
+    {
       "name": "release-conan-unix",
       "inherits": ["release"],
       "cacheVariables": {
@@ -114,11 +140,19 @@
       }
     },
     {
+      "name": "release-conan-unix-module",
+      "inherits": ["release-module", "dev-conan-unix"]
+    },
+    {
       "name": "release-conan-msvc",
       "inherits": ["release"],
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "build/generators/conan_toolchain.cmake"
       }
+    },
+    {
+      "name": "release-conan-msvc-module",
+      "inherits": ["release-module","dev-conan-msvc"]
     },
     {
       "name": "release-ci-unix",

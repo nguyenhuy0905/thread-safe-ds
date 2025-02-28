@@ -1,8 +1,16 @@
 include(cmake/no-insource.cmake)
 cmake_minimum_required(VERSION 3.28.0)
+if(CMAKE_VERSION VERSION_GREATER 3.30 AND template_IMPORT_STD)
+  set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
+  # This specific value changes as experimental support evolves. See
+  # `Help/dev/experimental.rst` in the CMake source corresponding to
+  # your CMake build for the exact value to use.
+  "0e5b6991-d74f-4b3d-a41c-cf096e0b2508")
+endif()
+
 project(tsds
     VERSION 0.1.0
-    HOMEPAGE_URL "https://example.com"
+    HOMEPAGE_URL "https://nguyenhuy0905.github.io/thread-safe-ds/"
     DESCRIPTION "Thread-safe Data Structure"
     LANGUAGES CXX)
 
@@ -11,7 +19,7 @@ include(cmake/compile-options.cmake)
 include(cmake/folders.cmake)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 23)
+  set(CMAKE_CXX_STANDARD 20)
 endif()
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)

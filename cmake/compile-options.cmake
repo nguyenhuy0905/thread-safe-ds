@@ -120,14 +120,20 @@ endif()
 cmake_dependent_option(tsds_MODULE "Whether to build using modules" OFF
   "CMAKE_VERSION VERSION_GREATER_EQUAL 3.28;
   CMAKE_CXX_STANDARD GREATER_EQUAL 20;
-  CMAKE_GENERATOR STREQUAL Ninja" OFF
+  CMAKE_GENERATOR STREQUAL Ninja OR
+  CMAKE_GENERATOR MATCHES \"Visual Studio\"" OFF
 )
 cmake_dependent_option(tsds_IMPORT_STD "Whether to use import std" OFF
-  "CMAKE_CXX_STANDARD GREATER_EQUAL 23" OFF
+  "CMAKE_CXX_STANDARD GREATER_EQUAL 23;template_MODULE" OFF
 )
 if(tsds_MODULE)
+  include(GenerateExportHeader)
   target_compile_definitions(tsds_compile_options INTERFACE TSDS_MODULE)
   add_library(tsds_lib_module)
+  generate_export_header(tsds_lib_module
+    BASE_NAME tsds
+    EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/tsds_export.h
+  )
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     # otherwise, nasty GCC module bug.
     # to be honest, even doing the other way doesn't fix it.

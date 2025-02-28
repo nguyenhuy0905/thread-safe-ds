@@ -2,17 +2,24 @@
 // without the range, clangd complains. So, comment the include out when clangd
 // complains
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <thread>
 #ifdef TSDS_MODULE
 import tsds.pool_alloc;
+import tsds.arena_alloc;
 #else
 #include "pool_alloc.hpp"
+#include "arena_alloc.hpp"
 #endif // TSDS_MODULE
 
+// NOTE: Catch2 assertions are not thread-safe.
+// So, for now, I retreat to asserts.
+// Maybe I will switch to GTest for this very reason.
+
 // NOLINTBEGIN(*function-cognitive-complexity*)
-TEST_CASE("Hopefully it compiles") {
+TEST_CASE("Hopefully it compiles", "[pool_alloc]") {
   constexpr std::size_t POOL_NUM = 1024;
   tsds::PoolAlloc<int, POOL_NUM> test{};
   auto* first_ptr = test.allocate();
@@ -30,9 +37,9 @@ TEST_CASE("Hopefully it compiles") {
         // should be consistent all the way until deallocation.
         *ptr = j; // NOLINT
         // Link with TSan to check.
-        REQUIRE(ptr != nullptr);
+        assert(ptr != nullptr);
         // if shits go wrong, this goes wrong
-        REQUIRE(*ptr == j);
+        assert(*ptr == j);
         ptr_vec.at(j) = ptr;
       }
       // If nothing goes wrong, commenting this out should still pass all the
@@ -40,7 +47,7 @@ TEST_CASE("Hopefully it compiles") {
       // Try to test what happens if no deallocate called also. Technically,
       // nothing should go wrong.
       for (uint8_t j = 0; j < 32; ++j) { // NOLINT(*magic-number*)
-        REQUIRE(*ptr_vec.at(j) == j);
+        assert(*ptr_vec.at(j) == j);
         test.deallocate(ptr_vec.at(j));
       }
     }};
@@ -50,5 +57,9 @@ TEST_CASE("Hopefully it compiles") {
       }
     }
   }
+}
+
+TEST_CASE("Hopefully it compiles", "[arena_alloc]") {
+  tsds::ArenaAlloc<4096> test{}; // NOLINT(*magic-number*)
 }
 // NOLINTEND(*function-cognitive-complexity*)

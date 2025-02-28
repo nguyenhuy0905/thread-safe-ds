@@ -2,14 +2,14 @@
 
 add_subdirectory(internal)
 if(tsds_MODULE)
-  target_sources(tsds_module
+  target_sources(tsds_lib_module
   PUBLIC
   FILE_SET CXX_MODULES FILES
   tsds.cpp
   arena_alloc.cpp
   pool_alloc.cpp
   )
-  target_link_libraries(tsds_module
+  target_link_libraries(tsds_lib_module
   PRIVATE
   $<BUILD_INTERFACE:tsds_compile_options>
   )
