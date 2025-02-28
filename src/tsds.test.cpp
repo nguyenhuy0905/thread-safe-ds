@@ -10,8 +10,8 @@
 import tsds.pool_alloc;
 import tsds.arena_alloc;
 #else
-#include "pool_alloc.hpp"
 #include "arena_alloc.hpp"
+#include "pool_alloc.hpp"
 #endif // TSDS_MODULE
 
 // NOTE: Catch2 assertions are not thread-safe.
@@ -30,7 +30,7 @@ TEST_CASE("Hopefully it compiles", "[pool_alloc]") {
   // dynamically (say, with a vector)
   std::array<std::thread, 32> test_threads{}; // NOLINT(*magic-number*)
   for (uint16_t i = 0; i < 32; ++i) {         // NOLINT(*magic-number*)
-    test_threads.at(i) = std::thread{[=]() mutable {
+    test_threads.at(i) = std::thread{[&]() mutable {
       std::array<int*, 32> ptr_vec{};    // NOLINT(*magic-number*)
       for (uint8_t j = 0; j < 32; ++j) { // NOLINT(*magic-number*)
         auto* ptr = test.allocate();
@@ -60,6 +60,31 @@ TEST_CASE("Hopefully it compiles", "[pool_alloc]") {
 }
 
 TEST_CASE("Hopefully it compiles", "[arena_alloc]") {
-  tsds::ArenaAlloc<4096> test{}; // NOLINT(*magic-number*)
+  tsds::ArenaAlloc<4096> test{};             // NOLINT(*magic-number*)
+  std::array<std::thread, 8> test_threads{}; // NOLINT(*magic-number*)
+  for (uint8_t i = 0; i < 8; ++i) {          // NOLINT(*magic-number*)
+    test_threads.at(i) = std::thread{[&]() mutable {
+      auto* lnum = static_cast<long*>(
+          test.allocate({.size = sizeof(long), .align = alignof(long)}));
+      auto* num = static_cast<int*>(
+          test.allocate({.size = sizeof(int), .align = alignof(int)}));
+      auto* chr = static_cast<char*>(
+          test.allocate({.size = sizeof(char), .align = alignof(char)}));
+      assert(lnum != nullptr);
+      assert(num != nullptr);
+      assert(chr != nullptr);
+      *lnum = 69; // NOLINT(*magic-number*)
+      *num = 4;
+      *chr = 'c';
+      assert(*chr == 'c');
+      assert(*num == 4);
+      assert(*lnum == 69);
+    }};
+  }
+  for(auto& thr : test_threads) {
+    if(thr.joinable()) {
+      thr.join();
+    }
+  }
 }
 // NOLINTEND(*function-cognitive-complexity*)

@@ -25,7 +25,8 @@ concept ValidSize = requires { Size > 0; };
  * @tparam BuffInitAlloc The allocator. It will be ``rebind``ed anyways, so
  * the template parameter type doesn't really matter.
  */
-template <std::size_t Size, template <typename> typename BuffInitAlloc = std::allocator>
+template <std::size_t Size,
+          template <typename> typename BuffInitAlloc = std::allocator>
   requires ValidSize<Size>
 class ArenaAlloc {
 public:
@@ -75,46 +76,54 @@ private:
   }()};
 };
 
-
 template <std::size_t Size, template <typename> typename BuffInitAlloc>
   requires ValidSize<Size>
 class ArenaAlloc<Size, BuffInitAlloc>::AllocBuff {
 public:
   AllocBuff() = default;
   auto allocate(AllocInfo t_alloc_info) -> void* {
-    auto align_ptr = [&t_alloc_info](uint8_t* t_p_ptr) -> uint8_t* {
-      // NOLINTNEXTLINE(*reinterpret-cast*)
-      auto curr_head_num = reinterpret_cast<std::uintptr_t>(t_p_ptr);
+    auto align_index = [&](std::size_t t_idx) -> std::size_t {
       // similar to curr_head_num % curr_head_idx since we assume align is a
       // power of 2
+      auto* head_ptr = &m_buff.front() + t_idx;
+      // NOLINTNEXTLINE(*reinterpret-cast*)
+      auto curr_head_num = reinterpret_cast<std::uintptr_t>(head_ptr);
       auto mod = curr_head_num & (t_alloc_info.align - 1);
-      return (mod == 0) ? t_p_ptr : t_p_ptr + t_alloc_info.align - mod;
+      return (mod == 0)
+                 ? t_idx
+                 : static_cast<std::size_t>(t_idx + t_alloc_info.align - mod);
     };
 
     auto curr_head_idx = m_head_idx.load(std::memory_order::relaxed);
-    auto* curr_head_ptr = (&m_buff.front() + curr_head_idx);
-    auto* aligned_head = align_ptr(curr_head_ptr);
-    auto* next_head = aligned_head + t_alloc_info.size;
-    if (next_head - &m_buff.front() > &m_buff.back()) {
+    auto aligned_idx = align_index(curr_head_idx);
+    auto next_head_idx =
+        static_cast<std::size_t>(aligned_idx + t_alloc_info.size);
+    if (next_head_idx >= Size) {
       return nullptr;
     }
 
-    while (!m_head_idx.compare_exchange_weak(curr_head_idx, next_head,
+    while (!m_head_idx.compare_exchange_weak(curr_head_idx, next_head_idx,
                                              std::memory_order::release,
-                                             std::memory_order::relaxed)) {
-      curr_head_ptr = (&m_buff.front() + curr_head_idx);
-      aligned_head = align_ptr(curr_head_ptr);
-      next_head = aligned_head + t_alloc_info.size;
-      if (next_head - &m_buff.front() > &m_buff.back()) {
+                                             std::memory_order::acquire)) {
+      aligned_idx = align_index(curr_head_idx);
+      next_head_idx = static_cast<std::size_t>(aligned_idx + t_alloc_info.size);
+      if (next_head_idx >= Size) {
         return nullptr;
       }
     }
-    return static_cast<void*>(aligned_head);
+    return static_cast<void*>(&m_buff.front() + aligned_idx);
   }
 
 private:
   std::array<uint8_t, Size> m_buff{};
   std::atomic<decltype(Size)> m_head_idx{};
 };
+
+template <std::size_t Size, template <typename> typename BuffInitAlloc>
+  requires ValidSize<Size>
+auto ArenaAlloc<Size, BuffInitAlloc>::allocate(AllocInfo t_alloc_info) noexcept
+    -> void* {
+  return m_alloc_buff->allocate(t_alloc_info);
+}
 }
 #endif // !TSDS_ARENA_ALLOC_HPP
