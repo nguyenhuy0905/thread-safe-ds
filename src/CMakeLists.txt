@@ -23,9 +23,7 @@ endif()
 # ---- testing ----
 
 if(BUILD_TESTING)
-  include(Catch)
-
-  find_package(Catch2 REQUIRED)
+  find_package(GTest REQUIRED)
   add_executable(tsds_test)
   # clean up GCOV files
   file(GLOB RECURSE CLEANUP_GCNO_FILES
@@ -51,21 +49,21 @@ if(BUILD_TESTING)
     PRIVATE
     tsds_lib_module
     $<BUILD_INTERFACE:tsds_compile_options>
-    Catch2::Catch2WithMain
+    GTest::gtest_main
     )
   else()
     target_link_libraries(tsds_test
     PRIVATE
     $<BUILD_INTERFACE:tsds_compile_options>
-    Catch2::Catch2WithMain
+    GTest::gtest_main
     )
   endif()
   if(tsds_PCH)
     target_precompile_headers(tsds_test
     PRIVATE
-    <catch2/catch_test_macros.hpp>
+    <gtest/gtest.h>
     )
   endif()
-  catch_discover_tests(tsds_test
-      WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+  include(GoogleTest)
+  gtest_discover_tests(tsds_test)
 endif()

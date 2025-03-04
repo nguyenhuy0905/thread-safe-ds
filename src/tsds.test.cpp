@@ -1,4 +1,4 @@
-#include <catch2/catch_test_macros.hpp>
+#include <gtest/gtest.h>
 // without the range, clangd complains. So, comment the include out when clangd
 // complains
 #include <array>
@@ -19,11 +19,11 @@ import tsds.arena_alloc;
 // Maybe I will switch to GTest for this very reason.
 
 // NOLINTBEGIN(*function-cognitive-complexity*)
-TEST_CASE("Hopefully it compiles", "[pool_alloc]") {
+TEST(PoolTest, ThreadTest) {
   constexpr std::size_t POOL_NUM = 1024;
   tsds::PoolAlloc<int, POOL_NUM> test{};
   auto* first_ptr = test.allocate();
-  REQUIRE(first_ptr != nullptr);
+  ASSERT_NE(first_ptr, nullptr);
   test.deallocate(first_ptr);
 
   // there's a very high chance you're borked by TSan if you do allocate
@@ -37,9 +37,9 @@ TEST_CASE("Hopefully it compiles", "[pool_alloc]") {
         // should be consistent all the way until deallocation.
         *ptr = j; // NOLINT
         // Link with TSan to check.
-        assert(ptr != nullptr);
+        ASSERT_NE(ptr, nullptr);
         // if shits go wrong, this goes wrong
-        assert(*ptr == j);
+        ASSERT_EQ(*ptr, j);
         ptr_vec.at(j) = ptr;
       }
       // If nothing goes wrong, commenting this out should still pass all the
@@ -47,7 +47,7 @@ TEST_CASE("Hopefully it compiles", "[pool_alloc]") {
       // Try to test what happens if no deallocate called also. Technically,
       // nothing should go wrong.
       for (uint8_t j = 0; j < 32; ++j) { // NOLINT(*magic-number*)
-        assert(*ptr_vec.at(j) == j);
+        ASSERT_EQ(*ptr_vec.at(j), j);
         test.deallocate(ptr_vec.at(j));
       }
     }};
@@ -59,7 +59,7 @@ TEST_CASE("Hopefully it compiles", "[pool_alloc]") {
   }
 }
 
-TEST_CASE("Hopefully it compiles", "[arena_alloc]") {
+TEST(ArenaTest, ThreadTest) {
   tsds::ArenaAlloc<4096> test{};             // NOLINT(*magic-number*)
   std::array<std::thread, 8> test_threads{}; // NOLINT(*magic-number*)
   for (uint8_t i = 0; i < 8; ++i) {          // NOLINT(*magic-number*)
@@ -82,23 +82,23 @@ TEST_CASE("Hopefully it compiles", "[arena_alloc]") {
             test.allocate({.size = sizeof(int), .align = alignof(int)}));
         auto* lnum = static_cast<long*>(
             test.allocate({.size = sizeof(long), .align = alignof(long)}));
-        assert(lnum != nullptr);
-        assert(num != nullptr);
-        assert(chr != nullptr);
+        ASSERT_NE(lnum, nullptr);
+        ASSERT_NE(num, nullptr);
+        ASSERT_NE(chr, nullptr);
         *lnum = j + 97; // NOLINT(*magic-number*)
         *num = 4 + j;
         *chr = 'c';
-        assert(*chr == 'c');
-        assert(*num == 4 + j);
-        assert(*lnum == 97 + j);
+        ASSERT_EQ(*chr, 'c');
+        ASSERT_EQ(*num, 4 + j);
+        ASSERT_EQ(*lnum, 97 + j);
         arr.at(j) = std::make_tuple(lnum, num, chr);
       }
 
       for (uint8_t j = 0; j < 16; ++j) { // NOLINT(*magic-number*)
         auto& [lnum, num, chr] = arr.at(j);
-        assert(*chr == 'c');
-        assert(*num == 4 + j);
-        assert(*lnum == 97 + j);
+        ASSERT_EQ(*chr, 'c');
+        ASSERT_EQ(*num, 4 + j);
+        ASSERT_EQ(*lnum, 97 + j);
       }
     }};
   }
